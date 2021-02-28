@@ -367,6 +367,14 @@ GLCamera camera;
 std::string s0 = "s0.obj";
 Mesh mesh;
 Eigen::Vector3d deltaShift(0, 0, 0);
+Eigen::Vector3d deltaAngle(0, 0, 0);
+int xOrigin = -1;
+int yOrigin = -1;
+double xLength = 0;
+double yLength = 0;
+bool xDirection = false;
+bool yDirection = false;
+
 
 void changeSize(int w, int h) {
 	// Prevent a divide by zero, when window is too short
@@ -489,6 +497,13 @@ void renderScene() {
 		camera.shiftUp(deltaShift[2]);
 	}
 
+	if (std::abs(deltaAngle[0]) > 1e-5) {
+		camera.pitch(-deltaAngle[0]);
+	}
+
+	if (std::abs(deltaAngle[1]) > 1e-5) {
+		camera.yaw(-deltaAngle[1]);
+	}
 
 
 	 //Set the camera
@@ -545,15 +560,15 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	case 27: exit(0); break; //key ESC
 	case 'x':
 	case 'X': 
-		camera.pitch(10);
+
 		break;
 	case 'y':
 	case 'Y': 
-		camera.yaw(10);
+
 		break;
 	case 'z':
 	case 'Z': 
-		camera.roll(10);
+
 		break;
 
 	case 'w':
@@ -586,20 +601,16 @@ void processNormalKeys(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		camera.shiftLeft(1);
-		//camera.shift(1, 0);
+		deltaAngle[1] = -0.5f;
 		break;
 	case GLUT_KEY_RIGHT:
-		camera.shiftRight(1);
-		//camera.shift(-1, 0);
+		deltaAngle[1] = 0.5f;
 		break;
 	case GLUT_KEY_UP:
-		camera.shiftUp(1);
-		//camera.shift(0, 1);
+		deltaAngle[0] = 0.5f;
 		break;
 	case GLUT_KEY_DOWN:
-		camera.shiftDown(1);
-		//camera.shift(0, -1);
+		deltaAngle[0] = -0.5f;
 		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
@@ -634,8 +645,67 @@ void releaseNormalKeys(unsigned char key, int x, int y) {
 		break;
 	}
 }
+void releaseSpacialKeys(int key, int x, int y) {
+	switch (key) {
+	case GLUT_KEY_LEFT:
+	case GLUT_KEY_RIGHT:
+		deltaAngle[1] = 0.f;
+		break;
+
+	case GLUT_KEY_UP:
+	case GLUT_KEY_DOWN:
+		deltaAngle[0] = 0.f;
+		break;
+
+	case GLUT_KEY_PAGE_UP:
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		break;
+	case GLUT_KEY_HOME:
+		break;
+	case GLUT_KEY_END:
+		break;
+	}
+}
 
 
+
+void mouseButton(int button, int state, int x, int y) {
+
+	// only start motion if the left button is pressed
+	if (button == GLUT_LEFT_BUTTON) {
+		// when the buttion is released
+		if (state == GLUT_UP) {
+			deltaAngle.setZero();
+			xOrigin = -1;
+		}
+		else { // state == GLUT_DOWN
+			xOrigin = x;
+		}
+	}
+}
+void mouseMove(int x, int y) {
+	float speed = 0.01f;
+	// this will only be true when the left button is down
+	//if (xOrigin >= 0) {
+	//	// update deltaAngle
+	//	deltaAngle[1] = (x - xOrigin) * speed;
+
+	//	// update camera's direction
+	//	camera.yaw(t-deltaAngle[1]);
+	//}
+
+	if (xOrigin >= 0) {
+		// update deltaAngle
+		
+		deltaAngle[1] = (x - xOrigin) * speed;
+
+		// update camera's direction
+		camera.yaw(-deltaAngle[1]);
+	}
+
+
+}
 
 
 void idle() {
@@ -693,6 +763,15 @@ int main(int argc, char**argv) {
 
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardUpFunc(releaseNormalKeys);
+	glutSpecialUpFunc(releaseSpacialKeys);
+
+
+
+
+
+	// mouse
+	glutMouseFunc(mouseButton);
+	glutMotionFunc(mouseMove);
 
 	/*glutKeyboardUpFunc(NormalKeys_UP);
 	glutSpecialUpFunc(SpecialKeys_UP);
