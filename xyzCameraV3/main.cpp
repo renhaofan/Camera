@@ -26,7 +26,14 @@ using std::ifstream;
 #include <Eigen/Dense>
 #include <Eigen/SparseLU>
 
-#include "Mesh.hpp"
+#include <OpenMesh/Core/IO/MeshIO.hh>
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+
+#include "GLCamera.hpp"
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<>  MyMesh;
+
+
 
 const float DEG2RAD = 3.141593f / 180.0f;
 const float RAD2DEG = 180.0f / 3.141593f;
@@ -34,346 +41,26 @@ const float EPSILON = 0.00001f;
 
 // reference: http://www.songho.ca/opengl/gl_camera.html#lookat
 
-#include "GLCamera.hpp"
 
-//class GLCamera {
-//	//　matrix store element is row-major
-//public:
-//	GLCamera();
-//	~GLCamera();
-//
-//	// OpenGL concerned
-//	void init();    // initialize OpenGL states
-//	void quit();    // clean up OpenGL objects
-//
-//	// print position, target, ModelViewMatrix
-//	void printSelf();
-//
-//	// only change camera position, target position is const
-//	void moveTo(const Eigen::Vector3d &to);
-//	void moveTo(double tx, double ty, double tz) { moveTo(Eigen::Vector3d(tx, ty, tz)); };
-//	void moveForward(double delta);
-//	void moveBackword(double delta) { moveForward(-delta); };
-//
-//	// shift both camera position and target position in same direction; left/right/up/down
-//	void shiftTo(const Eigen::Vector3d& to);
-//	void shiftTo(double tx, double ty, double tz) { shiftTo(Eigen::Vector3d(tx, ty, tz)); };
-//	void shift(const Eigen::Vector3d& delta);
-//	void shift(double deltaRight, double deltaUp, double backward) { shift(Eigen::Vector3d(deltaRight, deltaUp, backward)); };
-//	
-//	void shiftLeft(double deltaLeft) { if (deltaLeft <= 0) return;  shift(-deltaLeft, 0, 0); };
-//	void shiftRight(double deltaRight) { if (deltaRight <= 0) return;  shift(deltaRight, 0, 0); };
-//	void shiftUp(double deltaUp) { if (deltaUp <= 0) return;  shift(0, deltaUp, 0); };
-//	void shiftDown(double deltaDown) { if (deltaDown <= 0) return;  shift(0, -deltaDown, 0); };
-//	void shiftForward(double deltaForward) { if (deltaForward <= 0) return;  shift(0, 0, -deltaForward); };
-//	void shiftBackward(double deltaBackward) { if (deltaBackward <= 0) return;  shift(0, 0, deltaBackward); };
-//
-//
-//
-//	// rotate
-//	void pitch(double degree);
-//	void yaw(double degree);
-//	void roll(double degree);
-//
-//	// zoom camera
-//	void zoomCameraDelta(double delta);
-//
-//
-//	// setters 
-//	void setCamera(Eigen::Vector3d pos, Eigen::Vector3d tar);
-//	void setCamera(Eigen::Vector3d pos, Eigen::Vector3d tar, Eigen::Vector3d upDir);
-//	void setCamera(double px, double py, double pz, double tx, double ty, double tz) {
-//		setCamera(Eigen::Vector3d(px, py, pz), Eigen::Vector3d(tx, ty, tz));
-//	}
-//	void setCamera(double px, double py, double pz, double tx, double ty, double tz, double ux, double uy, double uz) {
-//		setCamera(Eigen::Vector3d(px, py, pz), Eigen::Vector3d(tx, ty, tz), Eigen::Vector3d(ux, uy, uz));
-//	}
-//	
-//	
-//	void setModelViewMatrix(const Eigen::Matrix4d& m) { matrixModelView = m; };
-//	void setModelMatrix(const Eigen::Matrix4d& m) { matrixModel = m; }
-//	void setViewMatrix(const Eigen::Matrix4d& m) { matrixView = m; }
-//	void setViewRotateMatrix(const Eigen::Matrix4d& m) { matrixViewRotate = m; }
-//	void setViewTranslateMatrix(const Eigen::Matrix4d& m) { matrixViewTranslate = m; }
-//	void setProjectionMatrix();
-//
-//
-//	// getters
-//	Eigen::Vector3d getCameraPosition() { return cameraPosition; };
-//	Eigen::Vector3d getTarget() { return target; };
-//	Eigen::Vector3d getCameraAngle() { return cameraAngle; };
-//	Eigen::Matrix4d getMatrixView() { return matrixView; };
-//	Eigen::Matrix4d getMatrixViewTranslate() { return matrixViewTranslate; };
-//	Eigen::Matrix4d getMatrixViewRotate() { return matrixViewRotate; };
-//	Eigen::Matrix4d getMatrixModel() { return matrixModel; };
-//	Eigen::Matrix4d getMatrixModelView() { return matrixModelView; };
-//	Eigen::Matrix4d getMatrixProjection() { return matrixProjection; };
-//	double getDistance() { return distance; }
-//
-//
-//	// update
-//	void updateDistance() { distance = (target - cameraPosition).norm(); }
-//	void updateViewMatrix() { matrixView = matrixViewRotate * matrixViewTranslate; }
-//	void updateModelViewMatrix() { matrixModelView = matrixView * matrixModel; }
-//
-//	// to vector homogeneous coordinates
-//	Eigen::Vector4d toVector4d(const Eigen::Vector3d& v) {
-//		return Eigen::Vector4d(v.x(), v.y(), v.z(), 0);
-//	}
-//
-//	// mouse control
-//	void setMousePosition(int x, int y) { mouseX = x; mouseY = y; };
-//
-//protected:
-//
-//private:
-//	// Camera
-//	Eigen::Vector3d cameraPosition;   // camera position at world space
-//	Eigen::Vector3d target;			  // camera focal(lookat), i.e target, position at world space
-//	double distance;                  // distance between cameraPosition and target
-//	Eigen::Vector3d cameraAngle;      // pitch(X),heading(Y), Roll(Z) around self coordinate
-//
-//
-//
-//	// 4x4 transform matrices
-//	Eigen::Matrix4d matrixView;
-//	Eigen::Matrix4d matrixViewRotate; // x,y,z  row-major
-//	Eigen::Matrix4d matrixViewTranslate;
-//	Eigen::Matrix4d matrixModel;
-//	Eigen::Matrix4d matrixModelView;
-//	Eigen::Matrix4d matrixProjection;
-//
-//
-//	int mouseX; int mouseY;
-//	double cameraDistance;
-//
-//};
-//
-//
-//GLCamera::GLCamera() {
-//
-//	this->matrixViewRotate.setIdentity();
-//	this->matrixViewTranslate.setIdentity();
-//	this->matrixView = matrixViewRotate * matrixViewTranslate;
-//
-//	this->matrixModel.setIdentity();
-//	this->matrixModelView = matrixView * matrixModel;
-//	this->matrixProjection.setIdentity();
-//
-//
-//
-//	this->mouseX = this->mouseY = 0;
-//	this->cameraDistance = 0;
-//	this->cameraPosition = Eigen::Vector3d(0, 0, 0);
-//	this->target = Eigen::Vector3d(0, 0, 0); // this means target, not the real focal;
-//	this->distance = (target - cameraPosition).norm();
-//	this->cameraAngle = Eigen::Vector3d(0, 0, 0);
-//
-//	// setModelViewMatrix();
-//	//this->intrinsics.setIdentity();
-////	this->extrinsics.setIdentity();
-//
-//}
-//
-//GLCamera::~GLCamera() {
-//
-//}
-//
-/////////////////////////////////////////////////////////////////////////////////
-//// initialize OpenGL states and scene
-/////////////////////////////////////////////////////////////////////////////////
-//void GLCamera::init() {
-//	glEnable(GL_DEPTH_TEST);
-//	//glClearColor(1.0, 1.0, 1.0, 0.0);//设置清除颜色
-//	//glClear(GL_COLOR_BUFFER_BIT);//把窗口清除为当前颜色
-//
-//}
-//
-/////////////////////////////////////////////////////////////////////////////////
-//// clean up OpenGL objects
-/////////////////////////////////////////////////////////////////////////////////
-//void GLCamera::quit() {
-//
-//}
-//
-//void GLCamera::printSelf() {
-//	std::cout << "====GLCamera======\n"
-//		<< "  Position.T(): " << cameraPosition.transpose() << "\n"
-//		<< "    Target.T():   " << target.transpose() << "\n"
-//		<< "    matrixModelView:     \n" << matrixModelView << "\n"
-//		<< "  Distance: " << this->distance << std::endl;
-//}
-//
-//void GLCamera::zoomCameraDelta(double delta) {
-//	if (delta > 0) this->shiftForward(delta);
-//	else this->shiftBackward(-delta);
-//}
-//
-//
-//#pragma region(shift)
-//void GLCamera::shiftTo(const Eigen::Vector3d& to) {
-//	Eigen::Vector3d forward = to - cameraPosition;
-//	Eigen::Vector3d newTarget = target + forward;
-//
-//
-//	this->cameraPosition = to;
-//	this->target = newTarget;
-//	
-//	updateDistance();
-//	
-//	this->matrixViewTranslate.block<3, 1>(0, 3) = -to;
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//}
-//
-// 
-//// delta > 0, right, up, backward;
-//void GLCamera::shift(const Eigen::Vector3d& delta) {
-//
-//	Eigen::Matrix4d m = matrixViewRotate.transpose();
-//
-//
-//	Eigen::Vector3d deltaRight = delta(0) * m.block<3, 1>(0, 0);
-//	Eigen::Vector3d deltaUp = delta(1) * m.block<3, 1>(0, 1);
-//	Eigen::Vector3d deltaBackward = delta(2) * m.block<3, 1>(0, 2);
-//
-//	Eigen::Vector3d newPosition = cameraPosition + deltaRight + deltaUp + deltaBackward;
-//
-//	shiftTo(newPosition);
-//}
-//#pragma endregion(shift)
-//
-//#pragma region(rotate)
-//void GLCamera::pitch(double degree) {
-//	Eigen::Matrix4d rotate;
-//	rotate.setIdentity();
-//	rotate(1, 1) = std::cos(degree * DEG2RAD);
-//	rotate(2, 2 ) = std::cos(degree * DEG2RAD);
-//	rotate(1, 2) = -std::sin(degree * DEG2RAD);
-//	rotate(2, 1) = std::sin(degree * DEG2RAD);
-//
-//	matrixViewRotate *= rotate;
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//
-//}
-//void GLCamera::yaw(double degree) {
-//	Eigen::Matrix4d rotate;
-//	degree = -degree;
-//	rotate.setIdentity();
-//	rotate(0, 0) = std::cos(degree * DEG2RAD);
-//	rotate(2, 2) = std::cos(degree * DEG2RAD);
-//	rotate(2, 0) = -std::sin(degree * DEG2RAD);
-//	rotate(0, 2) = std::sin(degree * DEG2RAD);
-//
-//	matrixViewRotate *= rotate;
-//
-//
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//}
-//void GLCamera::roll(double degree) {
-//	Eigen::Matrix4d rotate;
-//	rotate.setIdentity();
-//	rotate(0, 0) = std::cos(degree * DEG2RAD);
-//	rotate(1, 1) = std::cos(degree * DEG2RAD);
-//	rotate(1, 0) = std::sin(degree * DEG2RAD);
-//	rotate(0, 1) = -std::sin(degree * DEG2RAD);
-//
-//	matrixViewRotate *= rotate;
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//}
-//
-//#pragma endregion(rotate)
-//
-//#pragma region(setCamera)
-//void GLCamera::setCamera(Eigen::Vector3d pos, Eigen::Vector3d tar) {
-//	this->cameraPosition = pos;
-//	this->target = tar;
-//	updateDistance();
-//
-//	this->matrixViewTranslate.block<3, 1>(0, 3) = -pos;
-//
-//
-//
-//	Eigen::Vector3d w = pos - tar; w.normalize();
-//	Eigen::Vector3d v;
-//
-//
-//	if (abs(this->cameraPosition.x()) < EPSILON && abs(this->cameraPosition.z()) < EPSILON) {
-//		if (w.y() > 0) {
-//			v = Eigen::Vector3d(0, 0, -1);
-//		}
-//		else {
-//			v = Eigen::Vector3d(0, 0, 1);
-//		}
-//	}
-//	else
-//	{
-//		v = Eigen::Vector3d(0, 1, 0);
-//	}
-//
-//	Eigen::Vector3d u = v.cross(w); u.normalize();
-//	// recompute up vector, make three axis orthometric
-//	v = w.cross(u); v.normalize();
-//
-//	Eigen::Matrix4d uvw; uvw.setIdentity();
-//	uvw.block<3, 1>(0, 0) = u;
-//	uvw.block<3, 1>(0, 1) = v;
-//	uvw.block<3, 1>(0, 2) = w;
-//
-//
-//
-//	this->matrixViewRotate = uvw.transpose();
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//}
-//
-//
-//void GLCamera::setCamera(Eigen::Vector3d pos, Eigen::Vector3d tar, Eigen::Vector3d upDir) {
-//	this->cameraPosition = pos;
-//	this->target = tar;
-//	updateDistance();
-//
-//	this->matrixViewTranslate.block<3, 1>(0, 3) = -pos;
-//
-//
-//
-//	Eigen::Vector3d w = pos - tar; w.normalize();
-//	Eigen::Vector3d v = upDir;
-//
-//
-//	Eigen::Vector3d u = v.cross(w); u.normalize();
-//	// recompute up vector, make three axis orthometric
-//	v = w.cross(u); v.normalize();
-//
-//	Eigen::Matrix4d uvw; uvw.setIdentity();
-//	uvw.block<3, 1>(0, 0) = u;
-//	uvw.block<3, 1>(0, 1) = v;
-//	uvw.block<3, 1>(0, 2) = w;
-//
-//
-//
-//	this->matrixViewRotate = uvw.transpose();
-//	updateViewMatrix();
-//	updateModelViewMatrix();
-//}
-//#pragma endregion(setCamera)
+// s0 centroid points 333.661 169.086 - 21.2678
+std::string s0_path = "s0.obj";
+std::string s1_path = "s1.obj";
+std::string t0_path = "t0.obj";
+std::string t1_path = "t1.obj";
 
-
+MyMesh s0;
+MyMesh s1;
+MyMesh t0;
+MyMesh t1;
 
 GLCamera camera;
-std::string s0 = "s0.obj";
-Mesh mesh;
+
 Eigen::Vector3d deltaShift(0, 0, 0);
 Eigen::Vector3d deltaAngle(0, 0, 0);
 int xOrigin = -1;
 int yOrigin = -1;
 double xLength = 0;
 double yLength = 0;
-bool xDirection = false;
-bool yDirection = false;
 
 
 void changeSize(int w, int h) {
@@ -431,51 +118,20 @@ void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 		glEnd();
 	}
 }
-void drawMesh(Mesh& m) {
-	if (m.faceNum == 0 || m.vetexNum == 0) {
-		throw std::runtime_error("Invalid Mesh");
-	}
-	glColor3f(1.0f, 1.0f, 1.0f);
-	for (size_t i = 0; i < m.face.size(); i++) {
-		auto faceId = m.face[i];
-		auto vetexId1 = faceId[0] - 1;
-		auto vetexId2 = faceId[1] - 1;
-		auto vetexId3 = faceId[2] - 1;
-		glBegin(GL_LINE_STRIP);
-		glVertex3f(m.vetex[vetexId1][0]-m.centroid[0], m.vetex[vetexId1][1]-m.centroid[1], m.vetex[vetexId1][2]-m.centroid[2]);
-		glVertex3f(m.vetex[vetexId2][0]-m.centroid[0], m.vetex[vetexId2][1]-m.centroid[1], m.vetex[vetexId2][2]-m.centroid[2]);
-		glVertex3f(m.vetex[vetexId3][0]-m.centroid[0], m.vetex[vetexId3][1]-m.centroid[1], m.vetex[vetexId3][2]-m.centroid[2]);
+void plotMesh(MyMesh* m) {
+	glColor3f(1.f, 1.f, 1.f);
+	for (MyMesh::FaceIter f_it = (*m).faces_begin(); f_it != (*m).faces_end(); ++f_it) {
+		int index = 0;
+		glBegin(GL_LINE_LOOP);
+		// fv_it minus -1 automeshically, make sure vertex index from 0
+		for (MyMesh::FaceVertexIter fv_it = (*m).fv_iter(*f_it); fv_it.is_valid(); ++fv_it) {
+			auto p = (*m).point(*fv_it);
+			float * point = p.data();
+			glVertex3fv(point);
+		}
 		glEnd();
 	}
 }
-
-void drawTest() {
-	glLineWidth(5.0f);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glBegin(GL_LINES);
-	for (size_t j = 0; j < 3; j++) {
-		glVertex3f(j, 0.0f, 0.0f);
-		glVertex3f(0.0f, j, 0.0f);
-
-	}
-	glEnd();
-	glLineWidth(1.0f);
-}
-//void drawMesh(Mesh& m) {
-//	if (m.faceNum == 0 || m.vetexNum == 0) {
-//		throw std::runtime_error("Invalid Mesh");
-//	}
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	for (size_t i = 0; i < m.triangles.size(); i++) {
-//		Eigen::Vector3d v;
-//		glBegin(GL_LINE_STRIP);
-//		for (size_t j = 0; j < 3; j++) {
-//			v = m.triangles[i].v[j];
-//			glVertex3d(v[0] - 330, v[1] - 165, v[2] + 20);
-//		}
-//		glEnd();
-//	}
-//}
 
 
 void renderScene() {
@@ -526,7 +182,7 @@ void renderScene() {
 	m[3] = matrixModelView(3, 0); m[7] = matrixModelView(3, 1);  m[11] = matrixModelView(3, 2);  m[15] = matrixModelView(3, 3);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(m);
-	camera.printSelf();
+	// camera.printSelf();
 
 
 	//float mat[16];  //按照列存储，所以按照列打出来
@@ -544,18 +200,16 @@ void renderScene() {
 	plotWorldAxis();
 	// plot teapot
 	glColor3f(1.0, 1.0, 1.0);
+	
 	//glScalef(2.0, 1.0, 1.0);
 	glutWireTeapot(1.0f);
-	// plot mesh s0
-	// drawMesh(mesh);
-
-	// drawTest();
+	
+	plotMesh(&s0);
 	glutSwapBuffers();
 }
 
-
 void processNormalKeys(unsigned char key, int x, int y) {
-
+	float speed = 50;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
 	case 'x':
@@ -573,27 +227,27 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	case 'w':
 	case 'W':
-		deltaShift[0] = 0.1f;
+		deltaShift[0] = 0.1f * speed;
 		break;
 	case 's':
 	case 'S':
-		deltaShift[0] = -0.1f;
+		deltaShift[0] = -0.1f * speed;
 		break;
 	case 'a':
 	case 'A':
-		deltaShift[1] = 0.1f;
+		deltaShift[1] = 0.1f * speed;
 		break;
 	case 'd':
 	case 'D':
-		deltaShift[1] = -0.1f;
+		deltaShift[1] = -0.1f * speed;
 		break;
 	case 'q':
 	case 'Q':
-		deltaShift[2] = 0.1f;
+		deltaShift[2] = 0.1f * speed;
 		break;
 	case 'e':
 	case 'E':
-		deltaShift[2] = -0.1f;
+		deltaShift[2] = -0.1f * speed;
 		break;
 	}
 
@@ -668,8 +322,6 @@ void releaseSpacialKeys(int key, int x, int y) {
 	}
 }
 
-
-
 void mouseButton(int button, int state, int x, int y) {
 
 	// only start motion if the left button is pressed
@@ -678,14 +330,16 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) {
 			deltaAngle.setZero();
 			xOrigin = -1;
+			// yOrigin = -1;
 		}
 		else { // state == GLUT_DOWN
 			xOrigin = x;
+			// yOrigin = y;
 		}
 	}
 }
 void mouseMove(int x, int y) {
-	float speed = 0.01f;
+	float speed = 0.005;
 	// this will only be true when the left button is down
 	//if (xOrigin >= 0) {
 	//	// update deltaAngle
@@ -703,15 +357,22 @@ void mouseMove(int x, int y) {
 		// update camera's direction
 		camera.yaw(-deltaAngle[1]);
 	}
+	//if (yOrigin >= 0) {
+	//	// update deltaAngle
+
+	//	deltaAngle[0] = (y - yOrigin) * speed;
+
+	//	// update camera's direction
+	//	camera.pitch(-deltaAngle[0]);
+	//}
+
 
 
 }
-
 
 void idle() {
 	glutPostRedisplay();//调用当前绘制函数 
 }
-
 void SetRC() {
 	glEnable(GL_DEPTH_TEST);
 	//glClearColor(1.0, 1.0, 1.0, 0.0);//设置清除颜色
@@ -719,29 +380,17 @@ void SetRC() {
 }
 
 
+
+
+
 int main(int argc, char**argv) {
-	camera.setCamera(0, 0, 10,
+
+
+	OpenMesh::IO::read_mesh(s0, s0_path);
+	camera.setCamera(333.661, 169.086, - 21.2678,
 		0, 0, 0,
 		0, 1, 0);
-
-
-		//Eigen::Matrix3d subInverse; subInverse.setIdentity();
-		//std::cout << subInverse << std::endl;
-		//subInverse.col(0) = Eigen::Vector3d(2, 3, 4);
-		//std::cout << subInverse.col(0)[1] << std::endl;
-	//float x[3] = {1.f, 2.f, 3.f};
-	//float * t = x;
-	//Eigen::Vector3f out(x);
-	//std::cout << out.transpose() << std::endl;
-
-
-
-	//mesh.readMesh(s0);
-	//std::cout << mesh.radius << std::endl;
-	//Eigen::Vector3d position = mesh.centroid + mesh.radius;
-	//Eigen::Vector3d target = mesh.centroid;
-	//Eigen::Vector3d up = Eigen::Vector3d(0.f, 1.f, 0.f);
-	//camera.setCamera(position, target, up);
+	
 
 
 	glutInit(&argc, argv);
@@ -752,12 +401,8 @@ int main(int argc, char**argv) {
 
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(changeSize);
-	glutIdleFunc(idle);//注册全局回调函数：空闲时调用  
+	glutIdleFunc(idle);  
 
-
-	
-
-	
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
 
@@ -765,33 +410,14 @@ int main(int argc, char**argv) {
 	glutKeyboardUpFunc(releaseNormalKeys);
 	glutSpecialUpFunc(releaseSpacialKeys);
 
-
-
-
-
 	// mouse
 	glutMouseFunc(mouseButton);
 	glutMotionFunc(mouseMove);
-
-	/*glutKeyboardUpFunc(NormalKeys_UP);
-	glutSpecialUpFunc(SpecialKeys_UP);
-*/
-
-
-
-
-
-	//// here are the new entries
-	//glutIgnoreKeyRepeat(1);
-	//glutSpecialUpFunc(releaseKey); // process key up event
-
-
 
 	// OpenGL init
 	SetRC();
 
 	glutMainLoop();
-
 
 	system("pause");
 	return 0;
