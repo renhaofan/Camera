@@ -17,7 +17,7 @@ GLCamera::~GLCamera() {
 }
 
 void GLCamera::PrintInfo() {
-    std::cout << "Camera position: " << _e << "\n";
+    std::cout << "Camera position: \n" << _e << "\n";
     std::cout << "u: " << _u.transpose() << "\n";
     std::cout << "v: " << _v.transpose() << "\n";
     std::cout << "w: " << _w.transpose() << "\n";
@@ -57,7 +57,7 @@ void GLCamera::SetViewMatrix(const Eigen::Matrix4d& m) {
 	_u = m.block<1, 3>(0, 0); _u.normalize();
 	_v = m.block<1, 3>(1, 0); _v.normalize();
 	_w = m.block<1, 3>(2, 0); _w.normalize();
-	_e = m.block<3, 1>(0, 3); _e.normalize();
+	_e = m.block<3, 1>(0, 3); 
 	_e = -_e;
 }
 void GLCamera::SetViewMatrix(const Eigen::Vector3d& u, const Eigen::Vector3d& v, const Eigen::Vector3d& w, const Eigen::Vector3d& e) {
