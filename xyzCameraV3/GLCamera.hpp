@@ -35,6 +35,9 @@ public:
 	// setters
 	void SetViewTranslateMatrix(const Eigen::Vector3d& m);
 	void SetViewTranslateMatrix(const Eigen::Matrix4d& m);
+	void SetViewTranslateMatrix(double tx, double ty, double tz) {
+		SetViewTranslateMatrix(Eigen::Vector3d(tx, ty, tz));
+	}
 
 	void SetViewRotateMatrix(const Eigen::Matrix3d& m);
 	void SetViewRotateMatrix(const Eigen::Matrix4d& m);
@@ -65,7 +68,7 @@ public:
 		_u = _view_matrix.block<1, 3>(0, 0);
 		_v = _view_matrix.block<1, 3>(1, 0);
 		_w = _view_matrix.block<1, 3>(2, 0);
-		_e = _view_matrix.block<3, 1>(0, 3); 
+		_e = _view_translate_matrix.block<3, 1>(0, 3);
 		_e = -_e;
 	}
 

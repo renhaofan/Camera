@@ -35,9 +35,6 @@ typedef OpenMesh::PolyMesh_ArrayKernelT<>  MyMesh;
 
 
 
-const float DEG2RAD = 3.141593f / 180.0f;
-const float RAD2DEG = 180.0f / 3.141593f;
-const float EPSILON = 0.00001f;
 
 // reference: http://www.songho.ca/opengl/gl_camera.html#lookat
 
@@ -144,7 +141,7 @@ void renderScene() {
 	// Reset transformations
 	glLoadIdentity();
 
-	if (std::abs(deltaShift[0]) > 1e-5) {
+	/*if (std::abs(deltaShift[0]) > 1e-5) {
 		camera.shiftForward(deltaShift[0]);
 	}
 
@@ -162,7 +159,7 @@ void renderScene() {
 
 	if (std::abs(deltaAngle[1]) > 1e-5) {
 		camera.yaw(-deltaAngle[1]);
-	}
+	}*/
 
 
 	 //Set the camera
@@ -177,7 +174,7 @@ void renderScene() {
 	//
 	//glMatrixMode(GL_MODELVIEW);
 	//glLoadMatrixd(m);
-	Eigen::Matrix4d matrixModelView = camera.getMatrixModelView();
+	Eigen::Matrix4d matrixModelView = camera.GetViewMatrix();
 	double m[16];
 	m[0] = matrixModelView(0, 0); m[4] = matrixModelView(0, 1);  m[8] = matrixModelView(0, 2);  m[12] = matrixModelView(0, 3);
 	m[1] = matrixModelView(1, 0); m[5] = matrixModelView(1, 1);  m[9] = matrixModelView(1, 2);  m[13] = matrixModelView(1, 3);
@@ -185,31 +182,6 @@ void renderScene() {
 	m[3] = matrixModelView(3, 0); m[7] = matrixModelView(3, 1);  m[11] = matrixModelView(3, 2);  m[15] = matrixModelView(3, 3);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(m);
-	// camera.printSelf();
-
-
-	//float mat[16];  //按照列存储，所以按照列打出来
-	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-	//for (int index = 0; index < 4; index++) {
-	//	for (int i = 0; i < 4; ++i) {
-	//		printf("%f ", mat[index + i * 4]);
-	//	}
-	//	cout << endl;
-	//}
-	//cout << endl;
-
-	// plot reference grid
-	plotReferenceGrid();
-	// plot world coordinate axis
-	plotWorldAxis();
-	// plot teapot
-	/*glColor3f(1.0, 1.0, 1.0);
-	glutWireTeapot(1.0f);*/
-	
-	// plot mesh
-	plotMesh(&s0);
-	
-
 
 	float mat[16];  //按照列存储，所以按照行打出来
 	glGetFloatv(GL_MODELVIEW_MATRIX, mat);
@@ -220,6 +192,23 @@ void renderScene() {
 		cout << endl;
 	}
 	cout << endl;
+
+
+
+	// plot reference grid
+	plotReferenceGrid();
+	// plot world coordinate axis
+	plotWorldAxis();
+	// plot teapot
+	glColor3f(1.0, 1.0, 1.0);
+	glutWireTeapot(1.0f);
+	
+	// plot mesh
+	plotMesh(&s0);
+	
+
+
+	
 
 
 
@@ -340,53 +329,53 @@ void releaseSpacialKeys(int key, int x, int y) {
 	}
 }
 
-void mouseButton(int button, int state, int x, int y) {
-
-	// only start motion if the left button is pressed
-	if (button == GLUT_LEFT_BUTTON) {
-		// when the buttion is released
-		if (state == GLUT_UP) {
-			deltaAngle.setZero();
-			xOrigin = -1;
-			// yOrigin = -1;
-		}
-		else { // state == GLUT_DOWN
-			xOrigin = x;
-			// yOrigin = y;
-		}
-	}
-}
-void mouseMove(int x, int y) {
-	float speed = 0.005;
-	// this will only be true when the left button is down
-	//if (xOrigin >= 0) {
-	//	// update deltaAngle
-	//	deltaAngle[1] = (x - xOrigin) * speed;
-
-	//	// update camera's direction
-	//	camera.yaw(t-deltaAngle[1]);
-	//}
-
-	if (xOrigin >= 0) {
-		// update deltaAngle
-		
-		deltaAngle[1] = (x - xOrigin) * speed;
-
-		// update camera's direction
-		camera.yaw(-deltaAngle[1]);
-	}
-	//if (yOrigin >= 0) {
-	//	// update deltaAngle
-
-	//	deltaAngle[0] = (y - yOrigin) * speed;
-
-	//	// update camera's direction
-	//	camera.pitch(-deltaAngle[0]);
-	//}
-
-
-
-}
+//void mouseButton(int button, int state, int x, int y) {
+//
+//	// only start motion if the left button is pressed
+//	if (button == GLUT_LEFT_BUTTON) {
+//		// when the buttion is released
+//		if (state == GLUT_UP) {
+//			deltaAngle.setZero();
+//			xOrigin = -1;
+//			// yOrigin = -1;
+//		}
+//		else { // state == GLUT_DOWN
+//			xOrigin = x;
+//			// yOrigin = y;
+//		}
+//	}
+//}
+//void mouseMove(int x, int y) {
+//	float speed = 0.005;
+//	// this will only be true when the left button is down
+//	//if (xOrigin >= 0) {
+//	//	// update deltaAngle
+//	//	deltaAngle[1] = (x - xOrigin) * speed;
+//
+//	//	// update camera's direction
+//	//	camera.yaw(t-deltaAngle[1]);
+//	//}
+//
+//	if (xOrigin >= 0) {
+//		// update deltaAngle
+//		
+//		deltaAngle[1] = (x - xOrigin) * speed;
+//
+//		// update camera's direction
+//		camera.yaw(-deltaAngle[1]);
+//	}
+//	//if (yOrigin >= 0) {
+//	//	// update deltaAngle
+//
+//	//	deltaAngle[0] = (y - yOrigin) * speed;
+//
+//	//	// update camera's direction
+//	//	camera.pitch(-deltaAngle[0]);
+//	//}
+//
+//
+//
+//}
 
 void idle() {
 	glutPostRedisplay();//调用当前绘制函数 
@@ -408,10 +397,17 @@ int main(int argc, char**argv) {
 		-0.189534, 0.892371, 0.409573, -60.423790,
 		0.374771, 0.451302, -0.809860, -674.504822,
 		0.000000, 0.000000, 0.000000, 1.000000;
+	
+	Eigen::Vector3d tu(-0.907537, 0, -0.419973);
+	Eigen::Vector3d tv(-0.189534,  0.892371,  0.409573);
+	Eigen::Vector3d tw(0.374771, 0.451302, -0.80986);
+	Eigen::Vector3d te(-283.935, 60.4238, 674.505);
 
 
 	OpenMesh::IO::read_mesh(s0, s0_path);
-	camera.setViewMatrix(location);
+	//camera.SetViewMatrix(tu, tv, tw, te);
+	camera.SetViewMatrix(location);
+	camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
 	0, 0, 0,
@@ -440,8 +436,8 @@ int main(int argc, char**argv) {
 	glutSpecialUpFunc(releaseSpacialKeys);
 
 	// mouse
-	glutMouseFunc(mouseButton);
-	glutMotionFunc(mouseMove);
+	//glutMouseFunc(mouseButton);
+	//glutMotionFunc(mouseMove);
 
 	// OpenGL init
 	SetRC();

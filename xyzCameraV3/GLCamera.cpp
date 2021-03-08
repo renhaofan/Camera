@@ -21,6 +21,10 @@ void GLCamera::PrintInfo() {
     std::cout << "u: " << _u.transpose() << "\n";
     std::cout << "v: " << _v.transpose() << "\n";
     std::cout << "w: " << _w.transpose() << "\n";
+	std::cout << " _view_rotate_matrix: \n" << _view_rotate_matrix << "\n";
+	std::cout << " _view_translate_matrix:\n " << _view_translate_matrix << "\n";
+	std::cout << " _view_matrix:\n " << _view_matrix << "\n";
+
 }
 
 
@@ -46,9 +50,10 @@ void GLCamera::SetViewRotateMatrix(const Eigen::Vector3d& u, const Eigen::Vector
 	Eigen::Vector3d tmp_u, tmp_v, tmp_w;
 	tmp_u = u; tmp_v = v; tmp_w = w;
 	tmp_u.normalize(); tmp_v.normalize(); tmp_w.normalize();
-	_view_rotate_matrix.row(0) = ToHomogeneous(tmp_u);
-	_view_rotate_matrix.row(1) = ToHomogeneous(tmp_v);
-	_view_rotate_matrix.row(2) = ToHomogeneous(tmp_w);
+	_view_rotate_matrix.block<1, 3>(0, 0) = _u = tmp_u;
+	_view_rotate_matrix.block<1, 3>(1, 0) = _v = tmp_v;
+	_view_rotate_matrix.block<1, 3>(2, 0) = _w = tmp_w;
+
 	UpdateViewMatrix();
 }
 
@@ -64,7 +69,15 @@ void GLCamera::SetViewMatrix(const Eigen::Vector3d& u, const Eigen::Vector3d& v,
 	Eigen::Vector3d tmp_e, tmp_u, tmp_v, tmp_w;
 	tmp_u = u; tmp_v = v; tmp_w = w; tmp_e = e;
 
-	SetViewTranslateMatrix((Eigen::Vector3d)(-e));
+	tmp_u.normalize(); tmp_v.normalize(); tmp_w.normalize();
+	
+	/*_e = e;
+	_view_rotate_matrix.block<1, 3>(0, 0) = _u = tmp_u;
+	_view_rotate_matrix.block<1, 3>(1, 0) = _v = tmp_v;
+	_view_rotate_matrix.block<1, 3>(2, 0) = _w = tmp_w;
+	_view_translate_matrix.block<3, 1>(0, 3) = -e;
+	*/
+	SetViewTranslateMatrix(Eigen::Vector3d(tmp_e.x(), tmp_e.y(), tmp_e.z()));
 	SetViewRotateMatrix(tmp_u, tmp_v, tmp_w);
 }
 
@@ -91,7 +104,8 @@ void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar)
 	tmp_u = tmp_v.cross(tmp_w); tmp_u.normalize();
 	tmp_v = tmp_w.cross(tmp_u); tmp_v.normalize();
 
-	SetViewTranslateMatrix((Eigen::Vector3d)(-pos));
+	tmp_e = -tmp_e;
+	SetViewTranslateMatrix(Eigen::Vector3d(tmp_e.x(), tmp_e.y(), tmp_e.z()));
 	SetViewRotateMatrix(tmp_u, tmp_v, tmp_w);
 }
 void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar, const Eigen::Vector3d& upDir) {
@@ -101,7 +115,9 @@ void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar,
 	tmp_v = upDir; tmp_v.normalize();
 	tmp_u = tmp_v.cross(tmp_w); tmp_u.normalize();
 
-	SetViewTranslateMatrix((Eigen::Vector3d)(-pos));
+	tmp_e = -tmp_e;
+	SetViewTranslateMatrix(Eigen::Vector3d(tmp_e.x(), tmp_e.y(), tmp_e.z()));
+
 	SetViewRotateMatrix(tmp_u, tmp_v, tmp_w);
 }
 
