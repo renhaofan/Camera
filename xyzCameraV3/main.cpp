@@ -106,6 +106,8 @@ void plotWorldAxis() {
 	glVertex3f(0.0f, 0.0f, 1.0f);
 	glEnd();
 	glLineWidth(1.0f);
+
+	glColor3f(1.0f, 1.0f, 1.0f);
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 	glColor3f(0.5f, 0.5, 0.5); // gray color
@@ -117,6 +119,7 @@ void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 		glVertex3f(start, -1.0f, i*gridSize);
 		glEnd();
 	}
+	glColor3f(1.0f, 1.0f, 1.0f);
 }
 void plotMesh(MyMesh* m) {
 	glColor3f(1.f, 1.f, 1.f);
@@ -194,22 +197,37 @@ void renderScene() {
 	//	cout << endl;
 	//}
 	//cout << endl;
-	
+
+	// plot reference grid
 	plotReferenceGrid();
 	// plot world coordinate axis
 	plotWorldAxis();
 	// plot teapot
-	glColor3f(1.0, 1.0, 1.0);
+	/*glColor3f(1.0, 1.0, 1.0);
+	glutWireTeapot(1.0f);*/
 	
-	//glScalef(2.0, 1.0, 1.0);
-	glutWireTeapot(1.0f);
-	
+	// plot mesh
 	plotMesh(&s0);
+	
+
+
+	float mat[16];  //按照列存储，所以按照行打出来
+	glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+	for (int index = 0; index < 4; index++) {
+		for (int i = 0; i < 4; ++i) {
+			printf("%f ", mat[index + i * 4]);
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+
+
 	glutSwapBuffers();
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 50;
+	float speed = 100;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
 	case 'x':
@@ -385,12 +403,23 @@ void SetRC() {
 
 int main(int argc, char**argv) {
 
+	Eigen::Matrix4d location;
+	location << -0.907537, 0.000000, -0.419973, 283.934509,
+		-0.189534, 0.892371, 0.409573, -60.423790,
+		0.374771, 0.451302, -0.809860, -674.504822,
+		0.000000, 0.000000, 0.000000, 1.000000;
+
 
 	OpenMesh::IO::read_mesh(s0, s0_path);
-	camera.setCamera(333.661, 169.086, - 21.2678,
-		0, 0, 0,
-		0, 1, 0);
+	camera.setViewMatrix(location);
+
+	/*camera.setCamera(333.661, 169.086, - 21.2678,
+	0, 0, 0,
+	0, 1, 0);*/
 	
+	//camera.setCamera(0, 0, 10,
+	//	0, 0, 0,
+	//	0, 1, 0);
 
 
 	glutInit(&argc, argv);

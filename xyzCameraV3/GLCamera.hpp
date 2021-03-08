@@ -68,11 +68,11 @@ public:
 	}
 
 
-	void setModelViewMatrix(const Eigen::Matrix4d& m) { matrixModelView = m; };
-	void setModelMatrix(const Eigen::Matrix4d& m) { matrixModel = m; }
-	void setViewMatrix(const Eigen::Matrix4d& m) { matrixView = m; }
-	void setViewRotateMatrix(const Eigen::Matrix4d& m) { matrixViewRotate = m; }
-	void setViewTranslateMatrix(const Eigen::Matrix4d& m) { matrixViewTranslate = m; }
+	void setModelViewMatrix(const Eigen::Matrix4d& m);
+	void setModelMatrix(const Eigen::Matrix4d& m);
+	void setViewMatrix(const Eigen::Matrix4d& m);
+	void setViewRotateMatrix(const Eigen::Matrix4d& m);
+	void setViewTranslateMatrix(const Eigen::Matrix4d& m);
 	void setProjectionMatrix();
 
 
@@ -93,6 +93,7 @@ public:
 	void updateDistance() { distance = (target - cameraPosition).norm(); }
 	void updateViewMatrix() { matrixView = matrixViewRotate * matrixViewTranslate; }
 	void updateModelViewMatrix() { matrixModelView = matrixView * matrixModel; }
+	void updateCameraPosition() { cameraPosition = -matrixView.block<3, 1>(0, 3); }
 
 	// to vector homogeneous coordinates
 	Eigen::Vector4d toVector4d(const Eigen::Vector3d& v) {

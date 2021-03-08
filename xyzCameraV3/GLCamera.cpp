@@ -65,6 +65,36 @@ void GLCamera::zoomCameraDelta(double delta) {
 }
 
 
+#pragma region(setters)
+void GLCamera::setModelViewMatrix(const Eigen::Matrix4d& m) { 
+	matrixModelView = m; 
+	// assume matrix model is indentity
+	updateCameraPosition();
+};
+void GLCamera::setModelMatrix(const Eigen::Matrix4d& m) { 
+	matrixModel = m; 
+	updateModelViewMatrix(); 
+}
+void GLCamera::setViewMatrix(const Eigen::Matrix4d& m) { 
+	matrixView = m;  
+	updateModelViewMatrix(); 
+	updateCameraPosition();
+}
+void GLCamera::setViewRotateMatrix(const Eigen::Matrix4d& m) { 
+	matrixViewRotate = m; 
+	updateViewMatrix(); 
+	updateModelViewMatrix(); 
+}
+void GLCamera::setViewTranslateMatrix(const Eigen::Matrix4d& m) { 
+	matrixViewTranslate = m; 
+	updateViewMatrix(); 
+	updateModelViewMatrix(); 
+	updateCameraPosition();
+}
+
+
+#pragma endregion(setters)
+
 #pragma region(shift)
 void GLCamera::shiftTo(const Eigen::Vector3d& to) {
 	Eigen::Vector3d forward = to - cameraPosition;
