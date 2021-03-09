@@ -243,27 +243,27 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	case 'w':
 	case 'W':
-		camera.ShiftForward(0.1);
+		camera.MoveForward(0.1);
 		break;
 	case 's':
 	case 'S':
-		camera.ShiftForward(-0.1);
+		camera.MoveBackward(0.1);
 		break;
 	case 'a':
 	case 'A':
-		camera.ShiftLeft(0.1);
+		camera.MoveLeft(0.1);
 		break;
 	case 'd':
 	case 'D':
-		camera.ShiftLeft(-0.1);
+		camera.MoveLeft(-0.1);
 		break;
 	case 'q':
 	case 'Q':
-		camera.ShiftUp(0.1);
+		camera.MoveUp(0.1);
 		break;
 	case 'e':
 	case 'E':
-		camera.ShiftUp(-0.1);
+		camera.MoveUp(-0.1);
 		break;
 	}
 

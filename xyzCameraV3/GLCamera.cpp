@@ -178,7 +178,69 @@ void GLCamera::ShiftBackward(double deltaBackward) {
 }
 #pragma endregion(shift)
 
+#pragma region(move)
+void GLCamera::MoveLeft(double deltaLeft) {
+	if (deltaLeft <= 0) {
+		MoveRight(-deltaLeft);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.x() += deltaLeft;
+		SetViewTranslateMatrix(move);
+	}
+}
+void GLCamera::MoveRight(double deltaRight) {
+	if (deltaRight <= 0) {
+		MoveLeft(-deltaRight);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.x() -= deltaRight;
+		SetViewTranslateMatrix(move);
+	}
 
+}
 
+void GLCamera::MoveUp(double deltaUp) {
+	if (deltaUp <= 0) {
+		MoveDown(-deltaUp);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.y() -= deltaUp;
+		SetViewTranslateMatrix(move);
+	}
+}
+void GLCamera::MoveDown(double deltaDown) {
+	if (deltaDown <= 0) {
+		MoveUp(-deltaDown);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.y() += deltaDown;
+		SetViewTranslateMatrix(move);
+	}
+}
 
+void GLCamera::MoveForward(double deltaForward) {
+	if (deltaForward <= 0) {
+		MoveBackward(-deltaForward);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.z() += deltaForward;
+		SetViewTranslateMatrix(move);
+	}
+}
+void GLCamera::MoveBackward(double deltaBackward) {
+	if (deltaBackward <= 0) {
+		MoveForward(-deltaBackward);
+	}
+	else {
+		Eigen::Vector3d move = GetViewTranslate();
+		move.z() -= deltaBackward;
+		SetViewTranslateMatrix(move);
+	}
+}
+#pragma endregion(move)
 

@@ -89,7 +89,7 @@ public:
 		SetViewTranslateMatrix(-tx, -ty, -tz);
 	}
 
-	// delta > 0, shift direction---right(u), up(v), backward(w);
+	// delta > 0, shift direction---camera coordinates: right(u), up(v), backward(w);
 	void ShiftLeft(double deltaLeft);
 	void ShiftRight(double deltaRight);
 	void ShiftUp(double deltaUp);
@@ -97,7 +97,7 @@ public:
 	void ShiftForward(double deltaForward);
 	void ShiftBackward(double deltaBackward);
 
-	
+	// delta > 0, shift direction---world coordinates: right(x), up(y), backward(z);
 	void MoveLeft(double deltaLeft);
 	void MoveRight(double deltaRight);
 	void MoveUp(double deltaUp);
