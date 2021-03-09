@@ -64,12 +64,12 @@ public:
 
 	// update
 	void UpdateViewMatrix() {
-		_view_matrix = _view_rotate_matrix * _view_translate_matrix;
-		_u = _view_matrix.block<1, 3>(0, 0);
-		_v = _view_matrix.block<1, 3>(1, 0);
-		_w = _view_matrix.block<1, 3>(2, 0);
+		_u = _view_rotate_matrix.block<1, 3>(0, 0);
+		_v = _view_rotate_matrix.block<1, 3>(1, 0);
+		_w = _view_rotate_matrix.block<1, 3>(2, 0);
 		_e = _view_translate_matrix.block<3, 1>(0, 3);
 		_e = -_e;
+		_view_matrix = _view_rotate_matrix * _view_translate_matrix;
 	}
 
 
@@ -77,9 +77,25 @@ public:
 	Eigen::Matrix4d GetViewMatrix() {
 		return _view_matrix;
 	}
+	Eigen::Vector3d GetViewTranslate() {
+		return _view_translate_matrix.block<3, 1>(0, 3);
+	}
 
+	// translate to position t
+	void TranslateTo(const Eigen::Vector3d& t) {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-t));
+	}
+	void TranslateTo(double tx, double ty, double tz) {
+		SetViewTranslateMatrix(-tx, -ty, -tz);
+	}
 
-
+	// delta > 0, shift direction---right(u), up(v), backward(w);
+	void shiftLeft(double deltaLeft);
+	void shiftRight(double deltaRight);
+	void shiftUp(double deltaUp);
+	void shiftDown(double deltaDown);
+	void shiftForward(double deltaForward);
+	void shiftBackward(double deltaBackward);
 
 
 
@@ -103,8 +119,7 @@ protected:
 private:
 	// Camera e is camera 
 	Eigen::Vector3d _u, _v, _w, _e;		   // right-hand corresponding to x,y,z,orign(0, 0, 0)
-	Eigen::Vector3d _target;		   // camera focal(lookat), i.e target, position at world space
-
+	
 	// 4x4 transform matrices
 	Eigen::Matrix4d _view_matrix;
 	Eigen::Matrix4d _view_rotate_matrix; // x,y,z  row-major

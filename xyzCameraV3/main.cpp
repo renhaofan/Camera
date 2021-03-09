@@ -141,6 +141,14 @@ void renderScene() {
 	// Reset transformations
 	glLoadIdentity();
 
+	Eigen::Vector3d tmp = camera.GetViewTranslate();
+	if (std::abs(deltaShift[2]) > 1e-5) {
+		camera.SetViewTranslateMatrix(tmp.x(), tmp.y(), deltaShift[2]);
+	}
+
+
+
+
 	/*if (std::abs(deltaShift[0]) > 1e-5) {
 		camera.shiftForward(deltaShift[0]);
 	}
@@ -201,6 +209,7 @@ void renderScene() {
 	plotWorldAxis();
 	// plot teapot
 	glColor3f(1.0, 1.0, 1.0);
+	//glutSolidTeapot(1.0f);
 	glutWireTeapot(1.0f);
 	
 	// plot mesh
@@ -216,7 +225,7 @@ void renderScene() {
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 100;
+	float speed = 0.01;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
 	case 'x':
@@ -234,27 +243,27 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	case 'w':
 	case 'W':
-		deltaShift[0] = 0.1f * speed;
+		camera.shiftForward(0.1);
 		break;
 	case 's':
 	case 'S':
-		deltaShift[0] = -0.1f * speed;
+		camera.shiftForward(-0.1);
 		break;
 	case 'a':
 	case 'A':
-		deltaShift[1] = 0.1f * speed;
+		camera.shiftLeft(0.1);
 		break;
 	case 'd':
 	case 'D':
-		deltaShift[1] = -0.1f * speed;
+		camera.shiftLeft(-0.1);
 		break;
 	case 'q':
 	case 'Q':
-		deltaShift[2] = 0.1f * speed;
+		camera.shiftUp(0.1);
 		break;
 	case 'e':
 	case 'E':
-		deltaShift[2] = -0.1f * speed;
+		camera.shiftUp(-0.1);
 		break;
 	}
 
@@ -329,6 +338,7 @@ void releaseSpacialKeys(int key, int x, int y) {
 	}
 }
 
+
 //void mouseButton(int button, int state, int x, int y) {
 //
 //	// only start motion if the left button is pressed
@@ -398,15 +408,18 @@ int main(int argc, char**argv) {
 		0.374771, 0.451302, -0.809860, -674.504822,
 		0.000000, 0.000000, 0.000000, 1.000000;
 	
-	Eigen::Vector3d tu(-0.907537, 0, -0.419973);
-	Eigen::Vector3d tv(-0.189534,  0.892371,  0.409573);
-	Eigen::Vector3d tw(0.374771, 0.451302, -0.80986);
-	Eigen::Vector3d te(-283.935, 60.4238, 674.505);
+	Eigen::Vector3d tu(1, 0, -1);
+	Eigen::Vector3d tv(0, 1, 1);
+	Eigen::Vector3d tw(1, 0, 1);
+	Eigen::Vector3d te(-1, 0, -1);
 
 
 	OpenMesh::IO::read_mesh(s0, s0_path);
 	//camera.SetViewMatrix(tu, tv, tw, te);
-	camera.SetViewMatrix(location);
+	//camera.SetViewMatrix(location);
+	camera.LookAt(10, 0, 10,
+			0, 0, 0,
+			0, 1, 0);
 	camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
@@ -431,9 +444,9 @@ int main(int argc, char**argv) {
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
 
-	glutIgnoreKeyRepeat(1);
-	glutKeyboardUpFunc(releaseNormalKeys);
-	glutSpecialUpFunc(releaseSpacialKeys);
+	//glutIgnoreKeyRepeat(1);
+	/*glutKeyboardUpFunc(releaseNormalKeys);
+	glutSpecialUpFunc(releaseSpacialKeys);*/
 
 	// mouse
 	//glutMouseFunc(mouseButton);

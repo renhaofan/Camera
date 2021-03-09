@@ -6,7 +6,6 @@ GLCamera::GLCamera() {
     _v = Eigen::Vector3d(0, 1, 0);
     _w = Eigen::Vector3d(0, 0, 1);
     _e = Eigen::Vector3d(0, 0, 0);
-    _target = Eigen::Vector3d(0, 0, -1);
     _view_matrix.setIdentity();
     _view_rotate_matrix.setIdentity();
     _view_translate_matrix.setIdentity();
@@ -110,7 +109,7 @@ void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar)
 }
 void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar, const Eigen::Vector3d& upDir) {
 	Eigen::Vector3d tmp_e, tmp_u, tmp_v, tmp_w;
-
+	tmp_e = pos;
 	tmp_w = pos - tar; tmp_w.normalize();
 	tmp_v = upDir; tmp_v.normalize();
 	tmp_u = tmp_v.cross(tmp_w); tmp_u.normalize();
@@ -125,7 +124,59 @@ void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar,
 #pragma endregion(setters)
 
 
+#pragma region(shift)
 
+void GLCamera::shiftLeft(double deltaLeft) {
+	if (deltaLeft <= 0) {
+		shiftRight(-deltaLeft);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _u * deltaLeft)));
+	}
+}
+void GLCamera::shiftRight(double deltaRight) {
+	if (deltaRight <= 0) {
+		shiftLeft(-deltaRight);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _u * deltaRight)));
+	}
+}
+
+void GLCamera::shiftUp(double deltaUp) {
+	if (deltaUp <= 0) {
+		shiftDown(-deltaUp);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _v * deltaUp)));
+	}
+}
+void GLCamera::shiftDown(double deltaDown) {
+	if (deltaDown <= 0) {
+		shiftUp(-deltaDown);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _v * deltaDown)));
+	}
+}
+
+void GLCamera::shiftForward(double deltaForward) {
+	if (deltaForward <= 0) {
+		shiftBackward(-deltaForward);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _w * deltaForward)));
+	}
+}
+void GLCamera::shiftBackward(double deltaBackward) {
+	if (deltaBackward <= 0) {
+		shiftForward(-deltaBackward);
+	}
+	else {
+		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _w * deltaBackward)));
+	}
+}
+#pragma endregion(shift)
 
 
 
