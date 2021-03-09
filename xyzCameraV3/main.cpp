@@ -243,27 +243,27 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	case 'w':
 	case 'W':
-		camera.MoveForward(0.1);
+		camera.ShiftForward(0.1);
 		break;
 	case 's':
 	case 'S':
-		camera.MoveBackward(0.1);
+		camera.ShiftBackward(0.1);
 		break;
 	case 'a':
 	case 'A':
-		camera.MoveLeft(0.1);
+		camera.ShiftLeft(0.1);
 		break;
 	case 'd':
 	case 'D':
-		camera.MoveLeft(-0.1);
+		camera.ShiftLeft(-0.1);
 		break;
 	case 'q':
 	case 'Q':
-		camera.MoveUp(0.1);
+		camera.ShiftUp(0.1);
 		break;
 	case 'e':
 	case 'E':
-		camera.MoveUp(-0.1);
+		camera.ShiftUp(-0.1);
 		break;
 	}
 
@@ -271,16 +271,16 @@ void processNormalKeys(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		deltaAngle[1] = -0.5f;
+		camera.YawV(-0.1f);
 		break;
 	case GLUT_KEY_RIGHT:
-		deltaAngle[1] = 0.5f;
+		camera.YawV(0.1f);
 		break;
 	case GLUT_KEY_UP:
-		deltaAngle[0] = 0.5f;
+		camera.PitchU(-0.1f);
 		break;
 	case GLUT_KEY_DOWN:
-		deltaAngle[0] = -0.5f;
+		camera.PitchU(0.1f);
 		break;
 	case GLUT_KEY_PAGE_UP:
 		break;

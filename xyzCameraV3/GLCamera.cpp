@@ -244,3 +244,46 @@ void GLCamera::MoveBackward(double deltaBackward) {
 }
 #pragma endregion(move)
 
+#pragma region(rotation)
+void GLCamera::PitchU(double angle) {
+	Eigen::Matrix4d rotate;
+	rotate.setIdentity();
+
+	rotate(1, 1) = std::cos(angle);
+	rotate(2, 2) = std::cos(angle);
+	rotate(1, 2) = -std::sin(angle);
+	rotate(2, 1) = std::sin(angle);
+
+	_view_rotate_matrix = rotate * _view_rotate_matrix;
+	UpdateViewMatrix();
+}
+void GLCamera::YawV(double angle) {
+	Eigen::Matrix4d rotate;
+	rotate.setIdentity();
+	
+	rotate(0, 0) = std::cos(angle);
+	rotate(2, 2) = std::cos(angle);
+	rotate(2, 0) = -std::sin(angle);
+	rotate(0, 2) = std::sin(angle);
+
+	_view_rotate_matrix = rotate * _view_rotate_matrix;
+	UpdateViewMatrix();
+}
+void GLCamera::RollW(double angle) {
+	Eigen::Matrix4d rotate;
+	rotate.setIdentity();
+
+	rotate(0, 0) = std::cos(angle);
+	rotate(1, 1) = std::cos(angle);
+	rotate(1, 0) = std::sin(angle);
+	rotate(0, 1) = -std::sin(angle);
+
+	_view_rotate_matrix = rotate * _view_rotate_matrix;
+	UpdateViewMatrix();
+
+}
+
+
+
+
+#pragma endregion(rotation)

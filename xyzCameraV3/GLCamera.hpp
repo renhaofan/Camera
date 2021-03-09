@@ -97,13 +97,21 @@ public:
 	void ShiftForward(double deltaForward);
 	void ShiftBackward(double deltaBackward);
 
-	// delta > 0, shift direction---world coordinates: right(x), up(y), backward(z);
+	// delta > 0, move direction---world coordinates: right(x), up(y), backward(z);
 	void MoveLeft(double deltaLeft);
 	void MoveRight(double deltaRight);
 	void MoveUp(double deltaUp);
 	void MoveDown(double deltaDown);
 	void MoveForward(double deltaForward);
 	void MoveBackward(double deltaBackward);
+
+	// rotate aroud axis, u, v, w
+	void PitchU(double angle);
+	void YawV(double angle);
+	void RollW(double angle);
+
+
+
 
 	// to vector homogeneous coordinates
 	Eigen::Vector4d ToHomogeneous(const Eigen::Vector3d& v) {
