@@ -90,14 +90,20 @@ public:
 	}
 
 	// delta > 0, shift direction---right(u), up(v), backward(w);
-	void shiftLeft(double deltaLeft);
-	void shiftRight(double deltaRight);
-	void shiftUp(double deltaUp);
-	void shiftDown(double deltaDown);
-	void shiftForward(double deltaForward);
-	void shiftBackward(double deltaBackward);
+	void ShiftLeft(double deltaLeft);
+	void ShiftRight(double deltaRight);
+	void ShiftUp(double deltaUp);
+	void ShiftDown(double deltaDown);
+	void ShiftForward(double deltaForward);
+	void ShiftBackward(double deltaBackward);
 
-
+	
+	void MoveLeft(double deltaLeft);
+	void MoveRight(double deltaRight);
+	void MoveUp(double deltaUp);
+	void MoveDown(double deltaDown);
+	void MoveForward(double deltaForward);
+	void MoveBackward(double deltaBackward);
 
 	// to vector homogeneous coordinates
 	Eigen::Vector4d ToHomogeneous(const Eigen::Vector3d& v) {

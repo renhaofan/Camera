@@ -126,51 +126,51 @@ void GLCamera::SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar,
 
 #pragma region(shift)
 
-void GLCamera::shiftLeft(double deltaLeft) {
+void GLCamera::ShiftLeft(double deltaLeft) {
 	if (deltaLeft <= 0) {
-		shiftRight(-deltaLeft);
+		ShiftRight(-deltaLeft);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _u * deltaLeft)));
 	}
 }
-void GLCamera::shiftRight(double deltaRight) {
+void GLCamera::ShiftRight(double deltaRight) {
 	if (deltaRight <= 0) {
-		shiftLeft(-deltaRight);
+		ShiftLeft(-deltaRight);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _u * deltaRight)));
 	}
 }
 
-void GLCamera::shiftUp(double deltaUp) {
+void GLCamera::ShiftUp(double deltaUp) {
 	if (deltaUp <= 0) {
-		shiftDown(-deltaUp);
+		ShiftDown(-deltaUp);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _v * deltaUp)));
 	}
 }
-void GLCamera::shiftDown(double deltaDown) {
+void GLCamera::ShiftDown(double deltaDown) {
 	if (deltaDown <= 0) {
-		shiftUp(-deltaDown);
+		ShiftUp(-deltaDown);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _v * deltaDown)));
 	}
 }
 
-void GLCamera::shiftForward(double deltaForward) {
+void GLCamera::ShiftForward(double deltaForward) {
 	if (deltaForward <= 0) {
-		shiftBackward(-deltaForward);
+		ShiftBackward(-deltaForward);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e - _w * deltaForward)));
 	}
 }
-void GLCamera::shiftBackward(double deltaBackward) {
+void GLCamera::ShiftBackward(double deltaBackward) {
 	if (deltaBackward <= 0) {
-		shiftForward(-deltaBackward);
+		ShiftForward(-deltaBackward);
 	}
 	else {
 		SetViewTranslateMatrix((Eigen::Vector3d)(-(_e + _w * deltaBackward)));
