@@ -51,13 +51,19 @@ MyMesh t0;
 MyMesh t1;
 
 GLCamera camera;
-
+// camera concerned
 Eigen::Vector3d deltaShift(0, 0, 0);
 Eigen::Vector3d deltaAngle(0, 0, 0);
 int xOrigin = -1;
 int yOrigin = -1;
 double xLength = 0;
 double yLength = 0;
+
+// teapot
+double teapot_rotate = 0.f;
+// render way LINE/FILL
+bool render_way_bool = false;
+bool teapot_is_rotate_bool = false;
 
 
 void changeSize(int w, int h) {
@@ -77,14 +83,18 @@ void changeSize(int w, int h) {
 	glViewport(0, 0, w, h);
 
 	// Set the correct perspective.
+	
 	gluPerspective(45.0f, ratio, 0.1, 5000.0);
-	//gluPerspective(45.0f, ratio, 1, 10.0);
+	
+
+
 
 
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
 }
 void plotWorldAxis() {
+	glPushMatrix();
 	// plot 3-dim axis
 	glLineWidth(5.0f);
 	glColor3f(1.0f, 0.0f, 0.0f);
@@ -105,20 +115,25 @@ void plotWorldAxis() {
 	glLineWidth(1.0f);
 
 	glColor3f(1.0f, 1.0f, 1.0f);
+	glPopMatrix();
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
+	glPushMatrix();
 	glColor3f(0.5f, 0.5, 0.5); // gray color
 	for (float i = -start; i <= start; i++) {
 		glBegin(GL_LINES);
-		glVertex3f(i*gridSize, -1.0f, -start);
-		glVertex3f(i*gridSize, -1.0f, start);
-		glVertex3f(-start, -1.0f, i*gridSize);
-		glVertex3f(start, -1.0f, i*gridSize);
+		glVertex3f(i*gridSize, 0.0f, -start);
+		glVertex3f(i*gridSize, 0.0f, start);
+		glVertex3f(-start, 0.0f, i*gridSize);
+		glVertex3f(start, 0.0f, i*gridSize);
 		glEnd();
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
+	glPopMatrix();
 }
 void plotMesh(MyMesh* m) {
+	glPushMatrix();
+
 	glColor3f(1.f, 1.f, 1.f);
 	for (MyMesh::FaceIter f_it = (*m).faces_begin(); f_it != (*m).faces_end(); ++f_it) {
 		int index = 0;
@@ -131,6 +146,49 @@ void plotMesh(MyMesh* m) {
 		}
 		glEnd();
 	}
+	glPopMatrix();
+}
+
+
+void plotScene() {
+	// draw teapot
+	glPushMatrix();
+	glTranslated(0, 5, 0);
+	glRotated(teapot_rotate, 0, 1, 0);
+	glutSolidTeapot(1.f);
+	glPopMatrix();
+
+	// draw table
+	glPushMatrix();
+	glScaled(6, 1, 6);
+	glTranslated(0, 2.5, 0);
+	glutSolidCube(1.f);
+	glPopMatrix();
+
+	// draw legs
+	glPushMatrix();
+	glTranslatef(1.5, 1, 1.5);
+	glScaled(1, 2, 1);
+	glutSolidCube(1.f);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-1.5, 1, 1.5);
+	glScaled(1, 2, 1);
+	glutSolidCube(1.f);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1.5, 1, -1.5);
+	glScaled(1, 2, 1);
+	glutSolidCube(1.f);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-1.5, 1, -1.5);
+	glScaled(1, 2, 1);
+	glutSolidCube(1.f);
+	glPopMatrix();
 }
 
 
@@ -141,47 +199,15 @@ void renderScene() {
 	// Reset transformations
 	glLoadIdentity();
 
-	Eigen::Vector3d tmp = camera.GetViewTranslate();
-	if (std::abs(deltaShift[2]) > 1e-5) {
-		camera.SetViewTranslateMatrix(tmp.x(), tmp.y(), deltaShift[2]);
+
+	if (render_way_bool) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
-
-
-
-
-	/*if (std::abs(deltaShift[0]) > 1e-5) {
-		camera.shiftForward(deltaShift[0]);
+	else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+		
 
-	if (std::abs(deltaShift[1]) > 1e-5) {
-		camera.shiftLeft(deltaShift[1]);
-	}
-
-	if (std::abs(deltaShift[2]) > 1e-5) {
-		camera.shiftUp(deltaShift[2]);
-	}
-
-	if (std::abs(deltaAngle[0]) > 1e-5) {
-		camera.pitch(-deltaAngle[0]);
-	}
-
-	if (std::abs(deltaAngle[1]) > 1e-5) {
-		camera.yaw(-deltaAngle[1]);
-	}*/
-
-
-	 //Set the camera
-	//gluLookAt(10, 10, 10,
-	//	0, 0, 0,
-	//	0, 1, 0);
-
-	// camera.setModelViewMatrix();
-	// camera.printSelf();
-
-	//double* m = camera.getMV();
-	//
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadMatrixd(m);
 	Eigen::Matrix4d matrixModelView = camera.GetViewMatrix();
 	double m[16];
 	m[0] = matrixModelView(0, 0); m[4] = matrixModelView(0, 1);  m[8] = matrixModelView(0, 2);  m[12] = matrixModelView(0, 3);
@@ -191,15 +217,15 @@ void renderScene() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(m);
 
-	float mat[16];  //按照列存储，所以按照行打出来
-	glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-	for (int index = 0; index < 4; index++) {
-		for (int i = 0; i < 4; ++i) {
-			printf("%f ", mat[index + i * 4]);
-		}
-		cout << endl;
-	}
-	cout << endl;
+	//float mat[16];  //按照列存储，所以按照行打出来
+	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+	//for (int index = 0; index < 4; index++) {
+	//	for (int i = 0; i < 4; ++i) {
+	//		printf("%f ", mat[index + i * 4]);
+	//	}
+	//	cout << endl;
+	//}
+	//cout << endl;
 
 
 
@@ -207,63 +233,60 @@ void renderScene() {
 	plotReferenceGrid();
 	// plot world coordinate axis
 	plotWorldAxis();
-	// plot teapot
-	glColor3f(1.0, 1.0, 1.0);
-	//glutSolidTeapot(1.0f);
-	glutWireTeapot(1.0f);
 	
+	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
+	plotScene();
 	// plot mesh
 	plotMesh(&s0);
 	
-
-
 	
-
-
-
 	glutSwapBuffers();
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 50;
+	float speed = 10;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
-	case 'x':
-	case 'X': 
-
-		break;
-	case 'y':
-	case 'Y': 
-
-		break;
-	case 'z':
-	case 'Z': 
-
-		break;
-
 	case 'w':
 	case 'W':
-		// camera.ShiftForward(0.1 * speed);
+		camera.ShiftForward(0.1 * speed);
 		break;
 	case 's':
 	case 'S':
-		// camera.ShiftBackward(0.1 * speed);
+		camera.ShiftBackward(0.1 * speed);
 		break;
 	case 'a':
 	case 'A':
-		// camera.ShiftLeft(0.1 * speed);
+		camera.ShiftLeft(0.1 * speed);
 		break;
 	case 'd':
 	case 'D':
-		// camera.ShiftLeft(-0.1 * speed);
+		camera.ShiftLeft(-0.1 * speed);
 		break;
 	case 'q':
 	case 'Q':
-		// camera.ShiftUp(0.1 * speed);
+		camera.ShiftUp(0.1 * speed);
 		break;
 	case 'e':
 	case 'E':
-		// camera.ShiftUp(-0.1 * speed);
+		camera.ShiftUp(-0.1 * speed);
+		break;
+	case 'r':
+	case 'R':
+		teapot_is_rotate_bool = !teapot_is_rotate_bool;
+		break;
+	case 'm':
+	case 'M':
+		render_way_bool = !render_way_bool;
+		break;
+	case 'x':
+	case 'X':
+		break;
+	case 'y':
+	case 'Y':
+		break;
+	case 'z':
+	case 'Z':
 		break;
 	}
 
@@ -392,7 +415,7 @@ void idle() {
 }
 void SetRC() {
 	glEnable(GL_DEPTH_TEST);
-	//glClearColor(1.0, 1.0, 1.0, 0.0);//设置清除颜色
+	//glClearColor(0.0, 0.0, 0.0, 1.0);//设置清除颜色,黑色背景
 	//glClear(GL_COLOR_BUFFER_BIT);//把窗口清除为当前颜色
 }
 
@@ -408,18 +431,11 @@ int main(int argc, char**argv) {
 		0.374771, 0.451302, -0.809860, -674.504822,
 		0.000000, 0.000000, 0.000000, 1.000000;
 	
-	Eigen::Vector3d tu(1, 0, -1);
-	Eigen::Vector3d tv(0, 1, 1);
-	Eigen::Vector3d tw(1, 0, 1);
-	Eigen::Vector3d te(-1, 0, -1);
-
-
 	OpenMesh::IO::read_mesh(s0, s0_path);
-	//camera.SetViewMatrix(tu, tv, tw, te);
-	camera.SetViewMatrix(location);
-	//camera.LookAt(10, 0, 10,
-	//		0, 0, 0,
-	//		0, 1, 0);
+	// camera.SetViewMatrix(location);
+	camera.LookAt(0, 0, 10,
+			0, 0, 0,
+			0, 1, 0);
 	//camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
