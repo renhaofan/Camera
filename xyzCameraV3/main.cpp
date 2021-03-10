@@ -77,7 +77,7 @@ void changeSize(int w, int h) {
 	glViewport(0, 0, w, h);
 
 	// Set the correct perspective.
-	gluPerspective(45.0f, ratio, 0.1, 1000.0);
+	gluPerspective(45.0f, ratio, 0.1, 5000.0);
 	//gluPerspective(45.0f, ratio, 1, 10.0);
 
 
@@ -225,7 +225,7 @@ void renderScene() {
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 0.01;
+	float speed = 50;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
 	case 'x':
@@ -243,27 +243,27 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 	case 'w':
 	case 'W':
-		camera.ShiftForward(0.1);
+		// camera.ShiftForward(0.1 * speed);
 		break;
 	case 's':
 	case 'S':
-		camera.ShiftBackward(0.1);
+		// camera.ShiftBackward(0.1 * speed);
 		break;
 	case 'a':
 	case 'A':
-		camera.ShiftLeft(0.1);
+		// camera.ShiftLeft(0.1 * speed);
 		break;
 	case 'd':
 	case 'D':
-		camera.ShiftLeft(-0.1);
+		// camera.ShiftLeft(-0.1 * speed);
 		break;
 	case 'q':
 	case 'Q':
-		camera.ShiftUp(0.1);
+		// camera.ShiftUp(0.1 * speed);
 		break;
 	case 'e':
 	case 'E':
-		camera.ShiftUp(-0.1);
+		// camera.ShiftUp(-0.1 * speed);
 		break;
 	}
 
@@ -416,11 +416,11 @@ int main(int argc, char**argv) {
 
 	OpenMesh::IO::read_mesh(s0, s0_path);
 	//camera.SetViewMatrix(tu, tv, tw, te);
-	//camera.SetViewMatrix(location);
-	camera.LookAt(10, 0, 10,
-			0, 0, 0,
-			0, 1, 0);
-	camera.PrintInfo();
+	camera.SetViewMatrix(location);
+	//camera.LookAt(10, 0, 10,
+	//		0, 0, 0,
+	//		0, 1, 0);
+	//camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
 	0, 0, 0,
