@@ -57,12 +57,14 @@ void GLCamera::SetViewRotateMatrix(const Eigen::Vector3d& u, const Eigen::Vector
 }
 
 void GLCamera::SetViewMatrix(const Eigen::Matrix4d& m) {
-	_view_matrix = m;
-	_u = m.block<1, 3>(0, 0); _u.normalize();
-	_v = m.block<1, 3>(1, 0); _v.normalize();
-	_w = m.block<1, 3>(2, 0); _w.normalize();
-	_e = m.block<3, 1>(0, 3); 
-	_e = -_e;
+	Eigen::Matrix4d r_view; r_view.setIdentity();
+	r_view.block<3, 3>(0, 0) = m.block<3, 3>(0, 0);
+	Eigen::Vector4d t_view; 
+	t_view = m.block<4, 1>(0, 3);
+	t_view = r_view.transpose() * t_view;
+
+	SetViewTranslateMatrix(ToNonhomogeneous(t_view));
+	SetViewRotateMatrix(r_view);
 }
 void GLCamera::SetViewMatrix(const Eigen::Vector3d& u, const Eigen::Vector3d& v, const Eigen::Vector3d& w, const Eigen::Vector3d& e) {
 	Eigen::Vector3d tmp_e, tmp_u, tmp_v, tmp_w;
