@@ -62,7 +62,7 @@ double yLength = 0;
 // teapot
 double teapot_rotate = 0.f;
 // render way LINE/FILL
-int render_way = 0;
+int render_way = 1;
 bool teapot_is_rotate_bool = false;
 
 
@@ -300,6 +300,9 @@ void renderScene() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(m);
 
+	
+
+
 	//float mat[16];  //按照列存储，所以按照行打出来
 	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
 	//for (int index = 0; index < 4; index++) {
@@ -319,7 +322,19 @@ void renderScene() {
 
 
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
+
+	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
+	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
+	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
+	
+											 
+	glEnable(GL_LIGHTING); //开启光照模式
+	glEnable(GL_LIGHT0); //开启第0号光源
 	plotTeaTable();
+	glDisable(GL_LIGHT0);
+	glDisable(GL_LIGHTING);
+
 	// plot mesh
 	plotMesh(&s0);
 	
