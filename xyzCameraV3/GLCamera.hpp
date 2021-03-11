@@ -8,12 +8,12 @@
 *****************************************************************/
 
 /*****************************************************************
-  
-         z|                                w|
+
+		 z|                                w|
 	x     |          M_{view}        u      |
-    ------0       ------------>      -------e 
+	------0       ------------>      -------e
 		   \								 \
-		    \y								  \v
+			\y								  \v
 Note: gazing direction is -w, not w
 *****************************************************************/
 
@@ -33,31 +33,31 @@ public:
 	// print info
 	void PrintInfo();
 	// setters
-	void SetViewTranslateMatrix(const Eigen::Vector3d& m);
-	void SetViewTranslateMatrix(const Eigen::Matrix4d& m);
-	void SetViewTranslateMatrix(double tx, double ty, double tz) {
-		SetViewTranslateMatrix(Eigen::Vector3d(tx, ty, tz));
+	void SetViewTranslateMatrix(const Eigen::Vector3f& m);
+	void SetViewTranslateMatrix(const Eigen::Matrix4f& m);
+	void SetViewTranslateMatrix(float tx, float ty, float tz) {
+		SetViewTranslateMatrix(Eigen::Vector3f(tx, ty, tz));
 	}
 
-	void SetViewRotateMatrix(const Eigen::Matrix3d& m);
-	void SetViewRotateMatrix(const Eigen::Matrix4d& m);
-	void SetViewRotateMatrix(const Eigen::Vector3d& u, const Eigen::Vector3d& v, const Eigen::Vector3d& w); 
-	
-	void SetViewMatrix(const Eigen::Matrix4d& m);
-	void SetViewMatrix(const Eigen::Vector3d& u, const Eigen::Vector3d& v, const Eigen::Vector3d& w, const Eigen::Vector3d& e);
+	void SetViewRotateMatrix(const Eigen::Matrix3f& m);
+	void SetViewRotateMatrix(const Eigen::Matrix4f& m);
+	void SetViewRotateMatrix(const Eigen::Vector3f& u, const Eigen::Vector3f& v, const Eigen::Vector3f& w);
+
+	void SetViewMatrix(const Eigen::Matrix4f& m);
+	void SetViewMatrix(const Eigen::Vector3f& u, const Eigen::Vector3f& v, const Eigen::Vector3f& w, const Eigen::Vector3f& e);
 
 
 
-	void SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar);
-	void SetCamera(const Eigen::Vector3d& pos, const Eigen::Vector3d& tar, const Eigen::Vector3d& upDir);
-	void SetCamera(double px, double py, double pz, double tx, double ty, double tz) {
-		SetCamera(Eigen::Vector3d(px, py, pz), Eigen::Vector3d(tx, ty, tz));
+	void SetCamera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tar);
+	void SetCamera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tar, const Eigen::Vector3f& upDir);
+	void SetCamera(float px, float py, float pz, float tx, float ty, float tz) {
+		SetCamera(Eigen::Vector3f(px, py, pz), Eigen::Vector3f(tx, ty, tz));
 	}
-	void SetCamera(double px, double py, double pz, double tx, double ty, double tz, double ux, double uy, double uz) {
-		SetCamera(Eigen::Vector3d(px, py, pz), Eigen::Vector3d(tx, ty, tz), Eigen::Vector3d(ux, uy, uz));
+	void SetCamera(float px, float py, float pz, float tx, float ty, float tz, float ux, float uy, float uz) {
+		SetCamera(Eigen::Vector3f(px, py, pz), Eigen::Vector3f(tx, ty, tz), Eigen::Vector3f(ux, uy, uz));
 	}
-    // similar to gluLookAt()
-	void LookAt(double px, double py, double pz, double tx, double ty, double tz, double ux, double uy, double uz) {
+	// similar to gluLookAt()
+	void LookAt(float px, float py, float pz, float tx, float ty, float tz, float ux, float uy, float uz) {
 		SetCamera(px, py, pz, tx, ty, tz, ux, uy, uz);
 	}
 
@@ -74,56 +74,56 @@ public:
 
 
 	//getters
-	Eigen::Matrix4d GetViewMatrix() {
+	Eigen::Matrix4f GetViewMatrix() {
 		return _view_matrix;
 	}
-	Eigen::Vector3d GetViewTranslate() {
+	Eigen::Vector3f GetViewTranslate() {
 		return _view_translate_matrix.block<3, 1>(0, 3);
 	}
 
 	// translate to position t
-	void TranslateTo(const Eigen::Vector3d& t) {
-		SetViewTranslateMatrix((Eigen::Vector3d)(-t));
+	void TranslateTo(const Eigen::Vector3f& t) {
+		SetViewTranslateMatrix((Eigen::Vector3f)(-t));
 	}
-	void TranslateTo(double tx, double ty, double tz) {
+	void TranslateTo(float tx, float ty, float tz) {
 		SetViewTranslateMatrix(-tx, -ty, -tz);
 	}
 
 	// delta > 0, shift direction---camera coordinates: right(u), up(v), backward(w);
-	void ShiftLeft(double deltaLeft);
-	void ShiftRight(double deltaRight);
-	void ShiftUp(double deltaUp);
-	void ShiftDown(double deltaDown);
-	void ShiftForward(double deltaForward);
-	void ShiftBackward(double deltaBackward);
+	void ShiftLeft(float deltaLeft);
+	void ShiftRight(float deltaRight);
+	void ShiftUp(float deltaUp);
+	void ShiftDown(float deltaDown);
+	void ShiftForward(float deltaForward);
+	void ShiftBackward(float deltaBackward);
 
 	// delta > 0, move direction---world coordinates: right(x), up(y), backward(z);
-	void MoveLeft(double deltaLeft);
-	void MoveRight(double deltaRight);
-	void MoveUp(double deltaUp);
-	void MoveDown(double deltaDown);
-	void MoveForward(double deltaForward);
-	void MoveBackward(double deltaBackward);
+	void MoveLeft(float deltaLeft);
+	void MoveRight(float deltaRight);
+	void MoveUp(float deltaUp);
+	void MoveDown(float deltaDown);
+	void MoveForward(float deltaForward);
+	void MoveBackward(float deltaBackward);
 
 	// rotate aroud axis, u, v, w
-	void PitchU(double angle);
-	void YawV(double angle);
-	void RollW(double angle);
+	void PitchU(float angle);
+	void YawV(float angle);
+	void RollW(float angle);
 
 
 
 
 	// to vector homogeneous coordinates
-	Eigen::Vector4d ToHomogeneous(const Eigen::Vector3d& v) {
-		return Eigen::Vector4d(v.x(), v.y(), v.z(), 0);
+	Eigen::Vector4f ToHomogeneous(const Eigen::Vector3f& v) {
+		return Eigen::Vector4f(v.x(), v.y(), v.z(), 0);
 	}
 	// to vector nonhomogeneous coordinates
-	Eigen::Vector3d ToNonhomogeneous(const Eigen::Vector4d& v) {
+	Eigen::Vector3f ToNonhomogeneous(const Eigen::Vector4f& v) {
 		if (std::abs(v[3]) < 1e-5) {
-			return Eigen::Vector3d(v.x(), v.y(), v.z());
+			return Eigen::Vector3f(v.x(), v.y(), v.z());
 		}
 		else {
-			return Eigen::Vector3d(v.x()/v.w(), v.y()/v.w(), v.z()/v.w());
+			return Eigen::Vector3f(v.x() / v.w(), v.y() / v.w(), v.z() / v.w());
 		}
 	}
 
@@ -132,10 +132,10 @@ protected:
 
 private:
 	// Camera e is camera 
-	Eigen::Vector3d _u, _v, _w, _e;		   // right-hand corresponding to x,y,z,orign(0, 0, 0)
-	
+	Eigen::Vector3f _u, _v, _w, _e;		   // right-hand corresponding to x,y,z,orign(0, 0, 0)
+
 	// 4x4 transform matrices
-	Eigen::Matrix4d _view_matrix;
-	Eigen::Matrix4d _view_rotate_matrix; // x,y,z  row-major
-	Eigen::Matrix4d _view_translate_matrix;
+	Eigen::Matrix4f _view_matrix;
+	Eigen::Matrix4f _view_rotate_matrix; // x,y,z  row-major
+	Eigen::Matrix4f _view_translate_matrix;
 };
