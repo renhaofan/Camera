@@ -52,15 +52,13 @@ MyMesh t1;
 
 GLCamera camera;
 // camera concerned
-Eigen::Vector3d deltaShift(0, 0, 0);
-Eigen::Vector3d deltaAngle(0, 0, 0);
 int xOrigin = -1;
 int yOrigin = -1;
 double xLength = 0;
 double yLength = 0;
 
 // teapot
-double teapot_rotate = 0.f;
+float teapot_rotate = 0.f;
 // render way LINE/FILL
 int render_way = 1;
 bool teapot_is_rotate_bool = false;
@@ -172,10 +170,10 @@ void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 	glColor3f(0.5f, 0.5, 0.5); // gray color
 	for (float i = -start; i <= start; i++) {
 		glBegin(GL_LINES);
-		glVertex3f(i*gridSize, 0.0f, -start);
-		glVertex3f(i*gridSize, 0.0f, start);
-		glVertex3f(-start, 0.0f, i*gridSize);
-		glVertex3f(start, 0.0f, i*gridSize);
+		glVertex3f(i*gridSize, -1.f, -start);
+		glVertex3f(i*gridSize, -1.f, start);
+		glVertex3f(-start, -1.f, i*gridSize);
+		glVertex3f(start, -1.f, i*gridSize);
 		glEnd();
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -187,40 +185,40 @@ void plotTeaTable() {
 	glColor3f(1.f, 1.f, 1.f);
 	// draw teapot
 	glPushMatrix();
-	glTranslated(0, 5, 0);
-	glRotated(teapot_rotate, 0, 1, 0);
+	glTranslatef(0, 5, 0);
+	glRotatef(teapot_rotate, 0, 1, 0);
 	glutSolidTeapot(1.f);
 	glPopMatrix();
 
 	// draw table
 	glPushMatrix();
-	glScaled(6, 1, 6);
-	glTranslated(0, 2.5, 0);
+	glScalef(6, 1, 6);
+	glTranslatef(0, 2.5, 0);
 	glutSolidCube(1.f);
 	glPopMatrix();
 
 	// draw legs
 	glPushMatrix();
 	glTranslatef(1.5, 1, 1.5);
-	glScaled(1, 2, 1);
+	glScalef(1, 2, 1);
 	glutSolidCube(1.f);
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(-1.5, 1, 1.5);
-	glScaled(1, 2, 1);
+	glScalef(1, 2, 1);
 	glutSolidCube(1.f);
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(1.5, 1, -1.5);
-	glScaled(1, 2, 1);
+	glScalef(1, 2, 1);
 	glutSolidCube(1.f);
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(-1.5, 1, -1.5);
-	glScaled(1, 2, 1);
+	glScalef(1, 2, 1);
 	glutSolidCube(1.f);
 	glPopMatrix();
 }
@@ -241,7 +239,63 @@ void plotMesh(MyMesh* m) {
 	}
 	glPopMatrix();
 }
+void plotCamera() {
+	float translate[3] = { 5.f, 5.f, 5.f };
+	float height = 1.f; // y
+	float length = 2.f; //  x
+	float width = 0.5f; // z
+	float button_height = width / 4;
+	float radius = height - 0.5;
+	radius /= 2;
 
+	std::vector<float> s;
+
+
+	// draw camera body
+	glPushMatrix();
+	glColor3f(1.f, 1.f, 0);
+	glTranslatef(translate[0], translate[1], translate[2]);
+	glScalef(length, height, width);
+	glutSolidCube(1.f);
+	glPopMatrix();
+
+	// draw lens
+	glPushMatrix();
+	glTranslatef(translate[0], translate[1], translate[2]);
+	glBegin(GL_QUAD_STRIP);
+	for (size_t i = 0; i <= 360; i += 15) {
+		float p = i * 3.14 / 180;
+		float sinp = std::sin(p);
+		float cosp = std::cos(p);
+		glColor3f(sin(p), cos(p), 1.0f);
+		glVertex3f(sinp * radius, cosp * radius, width / 2);
+		glVertex3f(sinp * radius, cosp * radius, width);
+		s.push_back(sinp);
+		s.push_back(cosp);
+	}
+	glEnd();
+	glPopMatrix();
+
+	// draw button
+	radius = width / 4;
+	glPushMatrix();
+	glTranslatef(translate[0], translate[1], translate[2]);
+	glBegin(GL_QUAD_STRIP);
+	size_t tmp = s.size();
+	tmp = tmp / 2;
+	for (size_t i = 0; i < tmp; ++i) {
+		float p = i * 3.14 / 180;
+		float sinp = s[i * 2];
+		float cosp = s[i * 2 + 1];
+		glColor3f(sinp, cosp, 1.0f);
+		glVertex3f(sinp * radius - length/2+radius+0.1f, height/2, cosp * radius);
+		glVertex3f(sinp * radius - length/2+radius+0.1f, height/2+button_height, cosp * radius);
+	}
+	glEnd();
+	glPopMatrix();
+
+	
+}
 
 void myplotCone() {
 	// reference :https://www.cnblogs.com/MakeView660/p/10436685.html
@@ -291,7 +345,7 @@ void renderScene() {
 	}
 		
 
-	Eigen::Matrix4d matrixModelView = camera.GetViewMatrix();
+	Eigen::Matrix4f matrixModelView = camera.GetViewMatrix();
 	double m[16];
 	m[0] = matrixModelView(0, 0); m[4] = matrixModelView(0, 1);  m[8] = matrixModelView(0, 2);  m[12] = matrixModelView(0, 3);
 	m[1] = matrixModelView(1, 0); m[5] = matrixModelView(1, 1);  m[9] = matrixModelView(1, 2);  m[13] = matrixModelView(1, 3);
@@ -316,35 +370,34 @@ void renderScene() {
 
 
 	// plot reference grid
-	plotReferenceGrid();
+	plotReferenceGrid(20.f);
 	// plot world coordinate axis
 	plotWorldAxis();
-
+	plotCamera();
 
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
-	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
-	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
-	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
-	
-											 
-	glEnable(GL_LIGHTING); //开启光照模式
-	glEnable(GL_LIGHT0); //开启第0号光源
-	plotTeaTable();
-	glDisable(GL_LIGHT0);
-	glDisable(GL_LIGHTING);
+	//GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
+	//GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
+	//
+	//										 
+	//glEnable(GL_LIGHTING); //开启光照模式
+	//glEnable(GL_LIGHT0); //开启第0号光源
+	//plotTeaTable();
+	//glDisable(GL_LIGHT0);
+	//glDisable(GL_LIGHTING);
 
 	// plot mesh
 	plotMesh(&s0);
 	
 	
-
 	glutSwapBuffers();
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 10;
+	float speed = 1;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
 	case 'w':
@@ -423,19 +476,19 @@ void releaseNormalKeys(unsigned char key, int x, int y) {
 	case 'W':
 	case 's':
 	case 'S':
-		deltaShift[0] = 0.f;
+	
 		break;
 	case 'a':
 	case 'A':
 	case 'd':
 	case 'D':
-		deltaShift[1] = 0.f;
+
 		break;
 	case 'q':
 	case 'Q':
 	case 'e':
 	case 'E':
-		deltaShift[2] = 0.f;
+	
 		break;
 	}
 }
@@ -443,12 +496,12 @@ void releaseSpacialKeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
 	case GLUT_KEY_RIGHT:
-		deltaAngle[1] = 0.f;
+	
 		break;
 
 	case GLUT_KEY_UP:
 	case GLUT_KEY_DOWN:
-		deltaAngle[0] = 0.f;
+	
 		break;
 
 	case GLUT_KEY_PAGE_UP:
@@ -526,7 +579,7 @@ void SetRC() {
 
 int main(int argc, char**argv) {
 
-	Eigen::Matrix4d location;
+	Eigen::Matrix4f location;
 	location << -0.907537, 0.000000, -0.419973, 283.934509,
 		-0.189534, 0.892371, 0.409573, -60.423790,
 		0.374771, 0.451302, -0.809860, -674.504822,
@@ -534,9 +587,9 @@ int main(int argc, char**argv) {
 	
 	OpenMesh::IO::read_mesh(s0, s0_path);
 	// camera.SetViewMatrix(location);
-	camera.LookAt(20, 0, 20,
+	camera.LookAt(0, 10, 0,
 			0, 0, 0,
-			0, 1, 0);
+			0, 0, 1);
 	//camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
