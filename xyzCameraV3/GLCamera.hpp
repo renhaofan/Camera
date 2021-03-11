@@ -14,7 +14,7 @@
 	------0       ------------>      -------e
 		   \								 \
 			\y								  \v
-Note: gazing direction is -w, not w
+Note: gazing direction is -w, not w, u is up-direction
 *****************************************************************/
 
 #define DEG2RAD (3.1415926535f / 180.0f)
@@ -80,8 +80,20 @@ public:
 	Eigen::Vector3f GetViewTranslate() {
 		return _view_translate_matrix.block<3, 1>(0, 3);
 	}
+	Eigen::Vector3f GetCameraU() {
+		return _u;
+	}
+	Eigen::Vector3f GetCameraV() {
+		return _v;
+	}
+	Eigen::Vector3f GetCameraW() {
+		return _w;
+	}
+	Eigen::Vector3f GetCameraE() {
+		return _e;
+	}
 
-	// translate to position t
+	// translate to position t, similiar with glTranslate();
 	void TranslateTo(const Eigen::Vector3f& t) {
 		SetViewTranslateMatrix((Eigen::Vector3f)(-t));
 	}
