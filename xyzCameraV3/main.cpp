@@ -30,9 +30,11 @@ using std::ifstream;
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
 #include "GLCamera.hpp"
+// constexpr auto DEG2RAD = (3.1415926535f / 180.0f);
+#define DEG2RAD (3.1415926535f / 180.0f)
+#define RAD2DEG (180.0f / 3.1415926535f)
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<>  MyMesh;
-
 
 
 
@@ -50,9 +52,16 @@ MyMesh s1;
 MyMesh t0;
 MyMesh t1;
 
+// keyboard concerned
+GLboolean normal_keys_status[256] = { false };
+GLboolean special_keys_status[256] = { false };
+float normal_key_speed = 1.f;
+float special_key_speed = 1.f;
+
 GLCamera camera;
 // camera concerned
 float camera_position[3] = {0.f, 0.f, -10.f};
+float camera_angle[3] = { 0.f, 0.f, 0.f};
 int xOrigin = -1;
 int yOrigin = -1;
 double xLength = 0;
@@ -342,6 +351,42 @@ void myplotCone() {
 	glPopMatrix();
 }
 
+void normalKeyStatus() {
+	if (normal_keys_status['w'] || normal_keys_status['W']) {
+		camera.ShiftForward(0.1 * normal_key_speed);
+	}
+	if (normal_keys_status['s'] || normal_keys_status['S']) {
+		camera.ShiftBackward(0.1 * normal_key_speed);
+	}
+	if (normal_keys_status['a'] || normal_keys_status['A']) {
+		camera.ShiftLeft(0.1 * normal_key_speed);
+	}
+	if (normal_keys_status['d'] || normal_keys_status['D']) {
+		camera.ShiftLeft(-0.1 * normal_key_speed);
+	}
+	if (normal_keys_status['q'] || normal_keys_status['Q']) {
+		camera.ShiftUp(0.1 * normal_key_speed);
+	}
+	if (normal_keys_status['e'] || normal_keys_status['E']) {
+		camera.ShiftUp(-0.1 * normal_key_speed);
+	}
+}
+void specialKeyStatus() {
+	if (special_keys_status[GLUT_KEY_LEFT]) {
+		camera.YawV(-1.f * DEG2RAD * special_key_speed);
+	}
+	if (special_keys_status[GLUT_KEY_RIGHT]) {
+		camera.YawV(1.f * DEG2RAD * special_key_speed);
+	}
+	if (special_keys_status[GLUT_KEY_UP]) {
+		camera.PitchU(-1.f * DEG2RAD * special_key_speed);
+	}
+	if (special_keys_status[GLUT_KEY_DOWN]) {
+		camera.PitchU(1.f * DEG2RAD * special_key_speed);
+	}
+}
+
+
 void renderScene() {
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -364,6 +409,11 @@ void renderScene() {
 		break;
 	}
 		
+
+	normalKeyStatus();
+	specialKeyStatus();
+
+
 
 	Eigen::Matrix4f matrixModelView = camera.GetViewMatrix();
 	double m[16];
@@ -393,21 +443,25 @@ void renderScene() {
 	plotReferenceGrid(20.f);
 	// plot world coordinate axis
 	plotWorldAxis();
+	//Eigen::Vector3f camera_e = camera.GetCameraE();
+	//camera_position[0] += camera_e.x();
+	//camera_position[1] += camera_e.y();
+	//camera_position[2] += camera_e.z();
 	plotCamera(camera_position);
 
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
-	//GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
-	//GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
-	//glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
-	//glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
-	//
-	//										 
-	//glEnable(GL_LIGHTING); //开启光照模式
-	//glEnable(GL_LIGHT0); //开启第0号光源
-	//plotTeaTable();
-	//glDisable(GL_LIGHT0);
-	//glDisable(GL_LIGHTING);
+	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
+	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
+	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
+	
+											 
+	glEnable(GL_LIGHTING); //开启光照模式
+	glEnable(GL_LIGHT0); //开启第0号光源
+	plotTeaTable();
+	glDisable(GL_LIGHT0);
+	glDisable(GL_LIGHTING);
 
 	// plot mesh
 	plotMesh(&s0);
@@ -417,35 +471,28 @@ void renderScene() {
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
-	float speed = 1;
 	switch (key) {
 	case 27: exit(0); break; //key ESC
-	case 'w':
-	case 'W':
-		camera.ShiftForward(0.1 * speed);
-		break;
-	case 's':
-	case 'S':
-		camera.ShiftBackward(0.1 * speed);
-		break;
-	case 'a':
-	case 'A':
-		camera.ShiftLeft(0.1 * speed);
-		break;
-	case 'd':
-	case 'D':
-		camera.ShiftLeft(-0.1 * speed);
-		break;
-	case 'q':
-	case 'Q':
-		camera.ShiftUp(0.1 * speed);
-		break;
-	case 'e':
-	case 'E':
-		camera.ShiftUp(-0.1 * speed);
-		break;
-	case 'r':
-	case 'R':
+	case 'w': normal_keys_status['w'] = true; break;
+	case 'W': normal_keys_status['W'] = true; break;
+	
+	case 's': normal_keys_status['s'] = true; break;
+	case 'S': normal_keys_status['S'] = true; break;
+		
+	case 'a': normal_keys_status['a'] = true; break;
+	case 'A': normal_keys_status['A'] = true; break;
+		
+	case 'd': normal_keys_status['d'] = true; break;
+	case 'D': normal_keys_status['D'] = true; break;
+		
+	case 'q': normal_keys_status['q'] = true; break;
+	case 'Q': normal_keys_status['Q'] = true; break;
+
+	case 'e': normal_keys_status['e'] = true; break;
+	case 'E': normal_keys_status['E'] = true; break;
+		
+	case 'r': 
+	case 'R': 
 		teapot_is_rotate_bool = !teapot_is_rotate_bool;
 		break;
 	case 'm':
@@ -468,16 +515,16 @@ void processNormalKeys(unsigned char key, int x, int y) {
 void processSpecialKeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		camera.YawV(-0.1f);
+		special_keys_status[GLUT_KEY_LEFT] = true;
 		break;
 	case GLUT_KEY_RIGHT:
-		camera.YawV(0.1f);
+		special_keys_status[GLUT_KEY_RIGHT] = true;
 		break;
 	case GLUT_KEY_UP:
-		camera.PitchU(-0.1f);
+		special_keys_status[GLUT_KEY_UP] = true;
 		break;
 	case GLUT_KEY_DOWN:
-		camera.PitchU(0.1f);
+		special_keys_status[GLUT_KEY_DOWN] = true;
 		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
@@ -492,38 +539,35 @@ void processSpecialKeys(int key, int x, int y) {
 
 void releaseNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
-	case 'w':
-	case 'W':
-	case 's':
-	case 'S':
-	
-		break;
-	case 'a':
-	case 'A':
-	case 'd':
-	case 'D':
-
-		break;
-	case 'q':
-	case 'Q':
-	case 'e':
-	case 'E':
-	
-		break;
+	case 27: exit(0); break; //key ESC
+	case 'w': normal_keys_status['w'] = false; break;
+	case 'W': normal_keys_status['W'] = false; break;
+	case 's': normal_keys_status['s'] = false; break;
+	case 'S': normal_keys_status['S'] = false; break;
+	case 'a': normal_keys_status['a'] = false; break;
+	case 'A': normal_keys_status['A'] = false; break;
+	case 'd': normal_keys_status['d'] = false; break;
+	case 'D': normal_keys_status['D'] = false; break;
+	case 'q': normal_keys_status['q'] = false; break;
+	case 'Q': normal_keys_status['Q'] = false; break;
+	case 'e': normal_keys_status['e'] = false; break;
+	case 'E': normal_keys_status['E'] = false; break;
 	}
 }
 void releaseSpacialKeys(int key, int x, int y) {
 	switch (key) {
 	case GLUT_KEY_LEFT:
+		special_keys_status[GLUT_KEY_LEFT] = false;
+		break;
 	case GLUT_KEY_RIGHT:
-	
+		special_keys_status[GLUT_KEY_RIGHT] = false;
 		break;
-
 	case GLUT_KEY_UP:
-	case GLUT_KEY_DOWN:
-	
+		special_keys_status[GLUT_KEY_UP] = false;
 		break;
-
+	case GLUT_KEY_DOWN:
+		special_keys_status[GLUT_KEY_DOWN] = false;
+		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
 	case GLUT_KEY_PAGE_DOWN:
@@ -607,9 +651,9 @@ int main(int argc, char**argv) {
 	
 	OpenMesh::IO::read_mesh(s0, s0_path);
 	// camera.SetViewMatrix(location);
-	camera.LookAt(0, 10, 0,
+	camera.LookAt(0, 0, 10,
 			0, 0, 0,
-			0, 0, 1);
+			0, 1, 0);
 	//camera.PrintInfo();
 
 	/*camera.setCamera(333.661, 169.086, - 21.2678,
@@ -634,9 +678,9 @@ int main(int argc, char**argv) {
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
 
-	//glutIgnoreKeyRepeat(1);
-	/*glutKeyboardUpFunc(releaseNormalKeys);
-	glutSpecialUpFunc(releaseSpacialKeys);*/
+	glutIgnoreKeyRepeat(1);
+	glutKeyboardUpFunc(releaseNormalKeys);
+	glutSpecialUpFunc(releaseSpacialKeys);
 
 	// mouse
 	//glutMouseFunc(mouseButton);
