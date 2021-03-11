@@ -62,7 +62,7 @@ double yLength = 0;
 // teapot
 double teapot_rotate = 0.f;
 // render way LINE/FILL
-bool render_way_bool = false;
+int render_way = 0;
 bool teapot_is_rotate_bool = false;
 
 
@@ -93,29 +93,79 @@ void changeSize(int w, int h) {
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
 }
+
+
+void renderBitmapString(float x, float y, float z, void *font, char *string) {
+	// example: renderBitmapString(1.0f, 0.0f, 0.0f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"X");
+	char *c;
+	glRasterPos3f(x, y, z);
+	for (c = string; *c != '\0'; c++) {
+		glutBitmapCharacter(font, *c);
+	}
+}
 void plotWorldAxis() {
+	double half_length = 2.f;
+	// draw axess
 	glPushMatrix();
-	// plot 3-dim axis
-	glLineWidth(5.0f);
-	glColor3f(1.0f, 0.0f, 0.0f);
+	glLineWidth(2.0f);
 	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(1.0f, 0.0f, 0.0f);
-	glEnd();
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 1.0f, 0.0f);
-	glEnd();
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glBegin(GL_LINES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 0.0f, 1.0f);
+
+	glColor3f(1.f, 0.f, 0.f);
+	glVertex3f(-half_length, 0.0f, 0.0f);
+	glVertex3f(half_length, 0.0f, 0.0f);
+
+	glColor3f(0.f, 1.f, 0.f);
+	glVertex3f(0.f, -half_length, 0.0f);
+	glVertex3f(0.f, half_length, 0.0f);
+
+	glColor3f(0.f, 0.f, 1.f);
+	glVertex3f(0.f, 0.f, -half_length);
+	glVertex3f(0.f, 0.f, half_length);
 	glEnd();
 	glLineWidth(1.0f);
-
-	glColor3f(1.0f, 1.0f, 1.0f);
 	glPopMatrix();
+	// draw cone
+	glColor3f(1.f, 1.f, 1.f);
+	glPushMatrix();
+	//glColor3f(1.f, 0.f, 0.f);
+	glTranslatef(half_length, 0, 0);
+	glRotatef(90, 0, 1, 0);
+	glutSolidCone(0.1, 0.3, 16, 16);
+	glPopMatrix();
+
+	glPushMatrix();
+	//glColor3f(0.f, 1.f, 0.f);
+	glTranslatef(0, half_length, 0);
+	glRotatef(-90, 1, 0, 0);
+	glutSolidCone(0.1, 0.3, 16, 16);
+	glPopMatrix();
+
+	glPushMatrix();
+	//glColor3f(0.f, 0.f, 1.f);
+	glTranslatef(0, 0, half_length);
+	glutSolidCone(0.1, 0.3, 16, 16);
+	glPopMatrix();
+
+	// draw sephere
+	glPushMatrix();
+	glTranslatef(-half_length, 0, 0);
+	glutSolidSphere(0.03, 6, 6);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, -half_length, 0);
+	glutSolidSphere(0.03, 6, 6);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 0, -half_length);
+	glutSolidSphere(0.03, 6, 6);
+	glPopMatrix();
+
+	renderBitmapString(half_length + 0.3f, 0.f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"X");
+	renderBitmapString(0.f, half_length + 0.3f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Y");
+	renderBitmapString(0.f, 0.f, half_length + 0.3f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Z");
+
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 	glPushMatrix();
@@ -131,26 +181,10 @@ void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glPopMatrix();
 }
-void plotMesh(MyMesh* m) {
-	glPushMatrix();
 
+
+void plotTeaTable() {
 	glColor3f(1.f, 1.f, 1.f);
-	for (MyMesh::FaceIter f_it = (*m).faces_begin(); f_it != (*m).faces_end(); ++f_it) {
-		int index = 0;
-		glBegin(GL_LINE_LOOP);
-		// fv_it minus -1 automeshically, make sure vertex index from 0
-		for (MyMesh::FaceVertexIter fv_it = (*m).fv_iter(*f_it); fv_it.is_valid(); ++fv_it) {
-			auto p = (*m).point(*fv_it);
-			float * point = p.data();
-			glVertex3fv(point);
-		}
-		glEnd();
-	}
-	glPopMatrix();
-}
-
-
-void plotScene() {
 	// draw teapot
 	glPushMatrix();
 	glTranslated(0, 5, 0);
@@ -190,7 +224,51 @@ void plotScene() {
 	glutSolidCube(1.f);
 	glPopMatrix();
 }
+void plotMesh(MyMesh* m) {
+	glPushMatrix();
 
+	glColor3f(1.f, 1.f, 1.f);
+	for (MyMesh::FaceIter f_it = (*m).faces_begin(); f_it != (*m).faces_end(); ++f_it) {
+		int index = 0;
+		glBegin(GL_LINE_LOOP);
+		// fv_it minus -1 automeshically, make sure vertex index from 0
+		for (MyMesh::FaceVertexIter fv_it = (*m).fv_iter(*f_it); fv_it.is_valid(); ++fv_it) {
+			auto p = (*m).point(*fv_it);
+			float * point = p.data();
+			glVertex3fv(point);
+		}
+		glEnd();
+	}
+	glPopMatrix();
+}
+
+
+void myplotCone() {
+	// reference :https://www.cnblogs.com/MakeView660/p/10436685.html
+	glPushMatrix();
+	glBegin(GL_QUAD_STRIP);//连续填充四边形串
+	int i = 0;
+	for (i = 0; i <= 360; i += 15)
+	{
+		float p = i * 3.14 / 180;
+		glColor3f(sin(p), cos(p), 1.0f);
+		glVertex3f(0, 0, 1.0f);
+		glVertex3f(sin(p), cos(p), 0.0f);
+	}
+	glEnd();
+	//bottom circle
+	//glColor3f(0, 1, 1);
+	//glBegin(GL_TRIANGLE_FAN);           //扇形连续填充三角形串
+	//glVertex3f(0.0f, 0.0f, 0.0f);
+	//for (i = 0; i <= 360; i += 15)
+	//{
+	//	float p = i * 3.14 / 180;
+	//	glColor3f(sin(p), cos(p), tan(p));
+	//	glVertex3f(sin(p), cos(p), 0.0f);
+	//}
+	//glEnd();
+	glPopMatrix();
+}
 
 void renderScene() {
 	// Clear Color and Depth Buffers
@@ -200,11 +278,16 @@ void renderScene() {
 	glLoadIdentity();
 
 
-	if (render_way_bool) {
+	switch (render_way) {
+	case 0:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	case 1:
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	else {
+		break;
+	case 2:
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
 	}
 		
 
@@ -233,13 +316,15 @@ void renderScene() {
 	plotReferenceGrid();
 	// plot world coordinate axis
 	plotWorldAxis();
-	
+
+
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
-	plotScene();
+	plotTeaTable();
 	// plot mesh
 	plotMesh(&s0);
 	
 	
+
 	glutSwapBuffers();
 }
 
@@ -277,7 +362,8 @@ void processNormalKeys(unsigned char key, int x, int y) {
 		break;
 	case 'm':
 	case 'M':
-		render_way_bool = !render_way_bool;
+		render_way++;
+		if (render_way == 3) render_way = 0;
 		break;
 	case 'x':
 	case 'X':
@@ -415,7 +501,7 @@ void idle() {
 }
 void SetRC() {
 	glEnable(GL_DEPTH_TEST);
-	//glClearColor(0.0, 0.0, 0.0, 1.0);//设置清除颜色,黑色背景
+	// glClearColor(0.0, 0.0, 0.0, 1.0);//设置清除颜色,黑色背景
 	//glClear(GL_COLOR_BUFFER_BIT);//把窗口清除为当前颜色
 }
 
@@ -433,7 +519,7 @@ int main(int argc, char**argv) {
 	
 	OpenMesh::IO::read_mesh(s0, s0_path);
 	// camera.SetViewMatrix(location);
-	camera.LookAt(0, 0, 10,
+	camera.LookAt(20, 0, 20,
 			0, 0, 0,
 			0, 1, 0);
 	//camera.PrintInfo();
