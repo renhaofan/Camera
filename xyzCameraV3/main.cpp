@@ -52,6 +52,7 @@ MyMesh t1;
 
 GLCamera camera;
 // camera concerned
+float camera_position[3] = {0.f, 0.f, -10.f};
 int xOrigin = -1;
 int yOrigin = -1;
 double xLength = 0;
@@ -102,7 +103,7 @@ void renderBitmapString(float x, float y, float z, void *font, char *string) {
 	}
 }
 void plotWorldAxis() {
-	double half_length = 2.f;
+	float half_length = 2.f;
 	// draw axess
 	glPushMatrix();
 	glLineWidth(2.0f);
@@ -239,29 +240,30 @@ void plotMesh(MyMesh* m) {
 	}
 	glPopMatrix();
 }
-void plotCamera() {
-	float translate[3] = { 5.f, 5.f, 5.f };
+void plotCamera(float* position) {
+	// camera concerned
 	float height = 1.f; // y
 	float length = 2.f; //  x
 	float width = 0.5f; // z
 	float button_height = width / 4;
 	float radius = height - 0.5;
 	radius /= 2;
-
 	std::vector<float> s;
+	// axis concerned
+	float axis_length = length;
 
 
 	// draw camera body
 	glPushMatrix();
-	glColor3f(1.f, 1.f, 0);
-	glTranslatef(translate[0], translate[1], translate[2]);
+	glColor3f(1.f, 1.f, 1.f);
+	glTranslatef(position[0], position[1], position[2]);
 	glScalef(length, height, width);
 	glutSolidCube(1.f);
 	glPopMatrix();
 
 	// draw lens
 	glPushMatrix();
-	glTranslatef(translate[0], translate[1], translate[2]);
+	glTranslatef(position[0], position[1], position[2]);
 	glBegin(GL_QUAD_STRIP);
 	for (size_t i = 0; i <= 360; i += 15) {
 		float p = i * 3.14 / 180;
@@ -279,7 +281,7 @@ void plotCamera() {
 	// draw button
 	radius = width / 4;
 	glPushMatrix();
-	glTranslatef(translate[0], translate[1], translate[2]);
+	glTranslatef(position[0], position[1], position[2]);
 	glBegin(GL_QUAD_STRIP);
 	size_t tmp = s.size();
 	tmp = tmp / 2;
@@ -294,7 +296,23 @@ void plotCamera() {
 	glEnd();
 	glPopMatrix();
 
-	
+	// draw axes
+	glPushMatrix();
+	glLineWidth(5.0f);
+	glTranslatef(position[0], position[1], position[2]);
+	glBegin(GL_LINES);
+	glColor3f(1.f, 0.f, 0.f); // u
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(-axis_length, 0.0f, 0.0f);
+	glColor3f(0.f, 1.f, 0.f); // v
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(0.f, axis_length, 0.0f);
+	glColor3f(0.f, 0.f, 1.f); // -w
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(0.f, 0.f, axis_length);
+	glEnd();
+	glLineWidth(1.0f);
+	glPopMatrix();
 }
 
 void myplotCone() {
@@ -342,6 +360,8 @@ void renderScene() {
 	case 2:
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		break;
+	default:
+		break;
 	}
 		
 
@@ -373,7 +393,7 @@ void renderScene() {
 	plotReferenceGrid(20.f);
 	// plot world coordinate axis
 	plotWorldAxis();
-	plotCamera();
+	plotCamera(camera_position);
 
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
@@ -431,7 +451,7 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	case 'm':
 	case 'M':
 		render_way++;
-		if (render_way == 3) render_way = 0;
+		if (render_way >= 3) render_way = 0;
 		break;
 	case 'x':
 	case 'X':
