@@ -58,6 +58,12 @@ GLboolean special_keys_status[256] = { false };
 float normal_key_speed = 1.f;
 float special_key_speed = 1.f;
 
+// Pop up menu identifiers
+int main_menu, fill_menu, axes_menu;
+
+bool show_axes = true;
+
+
 GLCamera camera;
 // camera concerned
 float camera_position[3] = {0.f, 0.f, -10.f};
@@ -94,10 +100,6 @@ void changeSize(int w, int h) {
 	
 	gluPerspective(45.0f, ratio, 0.1, 5000.0);
 	
-
-
-
-
 	// Get Back to the Modelview
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -111,7 +113,7 @@ void renderBitmapString(float x, float y, float z, void *font, char *string) {
 		glutBitmapCharacter(font, *c);
 	}
 }
-void plotWorldAxis() {
+void plotWorldAxes() {
 	float half_length = 2.f;
 	// draw axess
 	glPushMatrix();
@@ -442,7 +444,7 @@ void renderScene() {
 	// plot reference grid
 	plotReferenceGrid(20.f);
 	// plot world coordinate axis
-	plotWorldAxis();
+	if (show_axes) plotWorldAxes();
 	//Eigen::Vector3f camera_e = camera.GetCameraE();
 	//camera_position[0] += camera_e.x();
 	//camera_position[1] += camera_e.y();
@@ -465,14 +467,18 @@ void renderScene() {
 
 	// plot mesh
 	plotMesh(&s0);
-	
-	
+
 	glutSwapBuffers();
 }
 
 void processNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
-	case 27: exit(0); break; //key ESC
+	case 27://key ESC
+		glutDestroyMenu(axes_menu);
+		glutDestroyMenu(fill_menu);
+		glutDestroyMenu(main_menu);
+		exit(0); 
+		break; 
 	case 'w': normal_keys_status['w'] = true; break;
 	case 'W': normal_keys_status['W'] = true; break;
 	
@@ -539,7 +545,12 @@ void processSpecialKeys(int key, int x, int y) {
 
 void releaseNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
-	case 27: exit(0); break; //key ESC
+	case 27:
+		glutDestroyMenu(main_menu);
+		glutDestroyMenu(axes_menu);
+		glutDestroyMenu(fill_menu);
+		exit(0); 
+		break; //key ESC
 	case 'w': normal_keys_status['w'] = false; break;
 	case 'W': normal_keys_status['W'] = false; break;
 	case 's': normal_keys_status['s'] = false; break;
@@ -577,6 +588,70 @@ void releaseSpacialKeys(int key, int x, int y) {
 	case GLUT_KEY_END:
 		break;
 	}
+}
+
+
+void processMainMenu(int option) {
+
+	// nothing to do in here
+	// all actions are for submenus
+}
+void processFillMenu(int option) {
+	switch (option) {
+	case 0:
+		render_way = 0;
+		break;
+	case 1:
+		render_way = 1;
+		break;
+	case 2:
+		render_way = 2;
+		break;
+	default:
+		break;
+	}
+}
+
+void processAxesMenu(int option) {
+	switch (option) {
+	case 0:
+		show_axes = true;
+		break;
+	case 1:
+		show_axes = false;
+		break;
+	default:
+		break;
+	}
+}
+void processMenuStatus(int status, int x, int y) {
+
+	//if (status == GLUT_MENU_IN_USE)
+		//menuFlag = 1;
+	//else
+		//menuFlag = 0;
+}
+
+void createPopupMenus() {
+	fill_menu = glutCreateMenu(processFillMenu);
+	glutAddMenuEntry("GL_POINT", 0);
+	glutAddMenuEntry("GL_LINE", 1);
+	glutAddMenuEntry("GL_FILL", 2);
+
+	axes_menu = glutCreateMenu(processAxesMenu);
+	glutAddMenuEntry("Enable", 0);
+	glutAddMenuEntry("Disable", 1);
+
+	main_menu = glutCreateMenu(processMainMenu);
+
+	glutAddSubMenu("Polygon Mode", fill_menu);
+	glutAddSubMenu("World Axes", axes_menu);
+	// attach the menu to the right button
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	// this will allow us to know if the menu is active
+	// glutMenuStatusFunc(processMenuStatus);
+
 }
 
 
@@ -685,6 +760,9 @@ int main(int argc, char**argv) {
 	// mouse
 	//glutMouseFunc(mouseButton);
 	//glutMotionFunc(mouseMove);
+
+	// init Menus
+	createPopupMenus();
 
 	// OpenGL init
 	SetRC();
