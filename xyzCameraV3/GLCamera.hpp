@@ -17,8 +17,7 @@
 Note: gazing direction is -w, not w, u is up-direction
 *****************************************************************/
 
-#define DEG2RAD (3.1415926535f / 180.0f)
-#define RAD2DEG (180.0f / 3.1415926535f)
+
 
 #include <iostream>
 #include <Eigen/Core>
