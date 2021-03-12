@@ -52,6 +52,12 @@ MyMesh s1;
 MyMesh t0;
 MyMesh t1;
 
+// compute frames per second
+// Note that this shouldn¡¯t be considered a true benchmark, just a guide value.
+int frame = 0;
+size_t current_time, time_stamp;
+char fps_char[50];
+
 // keyboard concerned
 GLboolean normal_keys_status[256] = { false };
 GLboolean special_keys_status[256] = { false };
@@ -60,7 +66,6 @@ float special_key_speed = 1.f;
 
 // Pop up menu identifiers
 int main_menu, fill_menu, axes_menu;
-
 bool show_axes = true;
 
 
@@ -75,9 +80,10 @@ double yLength = 0;
 
 // teapot
 float teapot_rotate = 0.f;
+bool teapot_is_rotate_bool = false;
 // render way LINE/FILL
 int render_way = 1;
-bool teapot_is_rotate_bool = false;
+
 
 
 void changeSize(int w, int h) {
@@ -388,6 +394,31 @@ void specialKeyStatus() {
 	}
 }
 
+void setOrthoProjection() {
+	// switch to projection mode
+	glMatrixMode(GL_PROJECTION);
+
+	// save previous matrix which contains the
+	//settings for the perspective projection
+	glPushMatrix();
+
+	// reset matrix
+	glLoadIdentity();
+
+	// set a 2D orthographic projection
+	gluOrtho2D(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0);
+
+	// switch back to modelview mode
+	glMatrixMode(GL_MODELVIEW);
+}
+void restorePerspProjection() {
+	glMatrixMode(GL_PROJECTION);
+	// restore previous projection matrix
+	glPopMatrix();
+
+	// get back to modelview mode
+	glMatrixMode(GL_MODELVIEW);
+}
 
 void renderScene() {
 	// Clear Color and Depth Buffers
@@ -467,6 +498,24 @@ void renderScene() {
 
 	// plot mesh
 	plotMesh(&s0);
+
+	// display fps in the window
+	frame++;
+	current_time = glutGet(GLUT_ELAPSED_TIME); // milisecond
+	if (current_time - time_stamp > 1000) {
+		sprintf(fps_char, "FPS:%4.2f", frame * 1000.f / (current_time - time_stamp));
+		time_stamp = current_time;
+		frame = 0;
+	}
+
+	// display fps
+	setOrthoProjection();
+	glPushMatrix();
+	glLoadIdentity();
+	renderBitmapString(5, 30, 0, GLUT_BITMAP_HELVETICA_12, fps_char);
+	glPopMatrix();
+	restorePerspProjection();
+
 
 	glutSwapBuffers();
 }
