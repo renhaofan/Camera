@@ -76,7 +76,9 @@ char currentMode[80];
 // width and height of the window
 int window_height = 600;
 int window_width = 800;
-
+int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+int screen_width = glutGet(GLUT_SCREEN_WIDTH);
+string screen_size = std::to_string(screen_width) + "x" + std::to_string(screen_height);
 
 GLCamera camera;
 // camera concerned
@@ -530,7 +532,8 @@ void renderScene() {
 	renderBitmapString(30, 60, 0, font, (char *)"F2 - Game Mode  800x600 32 bits");
 	renderBitmapString(30, 75, 0, font, (char *)"F3 - Game Mode 1024x768 32 bits");
 	renderBitmapString(30, 90, 0, font, (char *)"F4 - Game Mode 1280x1024 32 bits");
-	renderBitmapString(30, 105, 0, font, (char *)"F5 - Game Mode 1920x1200 32 bits");
+	string game_mode_screen = "F5 - Game Mode Screen Size " + screen_size + " 32 bits";
+	renderBitmapString(30, 105, 0, font, (char *)game_mode_screen.c_str());
 	renderBitmapString(30, 120, 0, font, (char *)"F6 - Window Mode");
 	renderBitmapString(30, 135, 0, font, (char *)"Esc - Quit");
 	renderBitmapString(30, 150, 0, font, currentMode);
@@ -579,6 +582,9 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	case 'M':
 		render_way++;
 		if (render_way >= 3) render_way = 0;
+		break;
+	case '/':
+		show_axes = !show_axes;
 		break;
 	case 'x':
 	case 'X':
@@ -663,12 +669,15 @@ void processSpecialKeys(int key, int x, int y) {
 			glutGameModeString(gameModeString);
 		break;
 	case GLUT_KEY_F5:
+		/*screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+		screen_width = glutGet(GLUT_SCREEN_WIDTH);
+		screen_size = std::to_string(screen_width) + "x" + std::to_string(screen_height);*/
 		// define resolution, color depth
-		glutGameModeString("1920x1200");
+		glutGameModeString(screen_size.c_str());
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, "1920x1200");
+			sprintf(gameModeString, screen_size.c_str());
 			// register callbacks again
 			// and init OpenGL context
 			init();
@@ -876,7 +885,7 @@ void init() {
 	// register callbacks
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(changeSize);
-	glutIdleFunc(idle);
+	glutIdleFunc(renderScene);
 
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
@@ -884,7 +893,7 @@ void init() {
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardUpFunc(releaseNormalKeys);
 	glutSpecialUpFunc(releaseSpacialKeys);
-
+	
 	// mouse
 	//glutMouseFunc(mouseButton);
 	//glutMotionFunc(mouseMove);
@@ -925,7 +934,9 @@ int main(int argc, char**argv) {
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(600, 800);
-	glutCreateWindow(argv[0]);
+	glutCreateWindow("Tutorial");
+
+
 
 	// register callbacks
 	init();
