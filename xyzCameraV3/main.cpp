@@ -316,6 +316,7 @@ void plotCamera(float* position) {
 	glPushMatrix();
 	glColor3f(1.f, 1.f, 1.f);
 	glTranslatef(position[0], position[1], position[2]);
+	glRotatef(180, 0, 1, 0);
 	glScalef(length, height, width);
 	glutSolidCube(1.f);
 	glPopMatrix();
@@ -323,6 +324,7 @@ void plotCamera(float* position) {
 	// draw lens
 	glPushMatrix();
 	glTranslatef(position[0], position[1], position[2]);
+	glRotatef(180, 0, 1, 0);
 	glBegin(GL_QUAD_STRIP);
 	for (size_t i = 0; i <= 360; i += 15) {
 		float p = i * 3.14 / 180;
@@ -337,14 +339,16 @@ void plotCamera(float* position) {
 	glEnd();
 	glPopMatrix();
 
+	size_t vsize = s.size();
+	vsize = vsize / 2;
+
 	// draw button
 	radius = width / 4;
 	glPushMatrix();
 	glTranslatef(position[0], position[1], position[2]);
+	glRotatef(180, 0, 1, 0);
 	glBegin(GL_QUAD_STRIP);
-	size_t tmp = s.size();
-	tmp = tmp / 2;
-	for (size_t i = 0; i < tmp; ++i) {
+	for (size_t i = 0; i < vsize; ++i) {
 		float p = i * 3.14 / 180;
 		float sinp = s[i * 2];
 		float cosp = s[i * 2 + 1];
@@ -353,12 +357,24 @@ void plotCamera(float* position) {
 		glVertex3f(sinp * radius - length/2+radius+0.1f, height/2+button_height, cosp * radius);
 	}
 	glEnd();
+	// draw cover of button
+	glBegin(GL_TRIANGLE_FAN);         
+	glVertex3f(-length / 2 + radius + 0.1f, height / 2 + button_height, 0.0f);
+	for (size_t i = 0; i < vsize; ++i) {
+		float p = i * 3.14 / 180;
+		float sinp = s[i * 2];
+		float cosp = s[i * 2 + 1];
+		glColor3f(sinp, cosp, tan(p));
+		glVertex3f(sinp * radius - length / 2 + radius + 0.1f, height / 2 + button_height, cosp * radius);
+	}
+	glEnd();
 	glPopMatrix();
 
 	// draw axes
 	glPushMatrix();
 	glLineWidth(5.0f);
 	glTranslatef(position[0], position[1], position[2]);
+	glRotatef(180, 0, 1, 0);
 	glBegin(GL_LINES);
 	glColor3f(1.f, 0.f, 0.f); // u
 	glVertex3f(0.f, 0.0f, 0.0f);
