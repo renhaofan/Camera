@@ -56,7 +56,7 @@ MyMesh t1;
 // Note that this shouldn’t be considered a true benchmark, just a guide value.
 int frame = 0;
 size_t current_time, time_stamp;
-char fps_char[50];
+char fps_chars[50];
 
 // keyboard concerned
 GLboolean normal_keys_status[256] = { false };
@@ -68,17 +68,14 @@ float special_key_speed = 1.f;
 int main_menu, fill_menu, axes_menu;
 bool show_axes = true;
 
-// this string keeps the last good setting
-// for the game mode
-char game_model_chars[40] = "640x480";
-char current_mode[80];
+
 
 // width and height of the window
-int window_height = 600;
+int window_height = 800;
 int window_width = 800;
 int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 int screen_width = glutGet(GLUT_SCREEN_WIDTH);
-string screen_size = std::to_string(screen_width) + "x" + std::to_string(screen_height);
+
 
 GLCamera camera;
 // camera concerned
@@ -97,9 +94,31 @@ int render_way = 1;
 // variables to hold window identifiers
 int main_window;
 int sub_window[3];
-
+// distance from camera position to top-view camera position
+float top_view_distance = 5.f;
+float observation_view_distance = 10.f;
+// border between subwindow
+int border = 6;
 
 void init();
+
+
+void setProjection(int w1, int h1) {
+	float ratio;
+	// Prevent a divide by zero, when window is too short
+	// (you cant make a window of zero width).
+	ratio = 1.0f * w1 / h1;
+	// Reset the coordinate system before modifying
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Set the viewport to be the entire window
+	glViewport(0, 0, w1, h1);
+
+	// Set the clipping volume
+	gluPerspective(45, ratio, 0.1, 1000);
+	glMatrixMode(GL_MODELVIEW);
+}
 
 void changeSize(int w, int h) {
 	window_height = h;
@@ -108,24 +127,28 @@ void changeSize(int w, int h) {
 	// Prevent a divide by zero, when window is too short
 	// (you cant make a window of zero width).
 	if (h == 0)
-		window_height = 1;
-	float ratio = window_width * 1.0 / window_height;
-
-	// Use the Projection Matrix
-	glMatrixMode(GL_PROJECTION);
-
-	// Reset Matrix
-	glLoadIdentity();
-
-	// Set the viewport to be the entire window
-	glViewport(0, 0, window_width, window_height);
-
-	// Set the correct perspective.
+		h = 1;
 	
-	gluPerspective(45.0f, ratio, 0.1, 5000.0);
-	
-	// Get Back to the Modelview
-	glMatrixMode(GL_MODELVIEW);
+	// set subwindow 1 as the active window
+	glutSetWindow(sub_window[0]);
+	// resize and reposition the sub window
+	glutPositionWindow(border, border);
+	glutReshapeWindow(w - 2 * border, h / 2 - border * 3 / 2);
+	setProjection(w - 2 * border, h / 2 - border * 3 / 2);
+
+	// set subwindow 2 as the active window
+	glutSetWindow(sub_window[1]);
+	// resize and reposition the sub window
+	glutPositionWindow(border, (h + border) / 2);
+	glutReshapeWindow(w / 2 - border * 3 / 2, h / 2 - border * 3 / 2);
+	setProjection(w / 2 - border * 3 / 2, h / 2 - border * 3 / 2);
+
+	// set subwindow 3 as the active window
+	glutSetWindow(sub_window[2]);
+	// resize and reposition the sub window
+	glutPositionWindow((w + border) / 2, (h + border) / 2);
+	glutReshapeWindow(w / 2 - border * 3 / 2, h / 2 - border * 3 / 2);
+	setProjection(w / 2 - border * 3 / 2, h / 2 - border * 3 / 2);
 }
 
 
@@ -196,10 +219,11 @@ void plotWorldAxes() {
 	glutSolidSphere(0.03, 6, 6);
 	glPopMatrix();
 
+	glPushMatrix();
 	renderBitmapString(half_length + 0.3f, 0.f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"X");
 	renderBitmapString(0.f, half_length + 0.3f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Y");
 	renderBitmapString(0.f, 0.f, half_length + 0.3f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Z");
-
+	glPopMatrix();
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 	glPushMatrix();
@@ -443,13 +467,45 @@ void restorePerspProjection() {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void plotObject() {
+	// plot reference grid
+	plotReferenceGrid(20.f);
+	// plot world coordinate axis
+	if (show_axes) plotWorldAxes();
+
+	float* camera_e = camera.GetCameraE().data();
+	camera_position[0] = *camera_e;
+	camera_position[1] = *(camera_e + 1);
+	camera_position[2] = *(camera_e + 2);
+	plotCamera(camera_position);
+	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
+
+	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
+	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
+	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
+	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
+
+
+	glEnable(GL_LIGHTING); //开启光照模式
+	glEnable(GL_LIGHT0); //开启第0号光源
+	plotTeaTable();
+	glDisable(GL_LIGHT0);
+	glDisable(GL_LIGHTING);
+	// plot mesh
+	plotMesh(&s0);
+}
+
+// Display func for main window
 void renderScene() {
+	glutSetWindow(main_window);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glutSwapBuffers();
+}
+
+void renderSw0Scene() {
+	glutSetWindow(sub_window[0]);
 	// Clear Color and Depth Buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Reset transformations
-	glLoadIdentity();
-
 
 	switch (render_way) {
 	case 0:
@@ -464,23 +520,25 @@ void renderScene() {
 	default:
 		break;
 	}
-		
+	
 
 	normalKeyStatus();
 	specialKeyStatus();
 	mouseMoveStatus();
 
 
+	// Reset transformations
+	glLoadIdentity();
 	Eigen::Matrix4f matrixModelView = camera.GetViewMatrix();
-	double m[16];
+	float m[16];
 	m[0] = matrixModelView(0, 0); m[4] = matrixModelView(0, 1);  m[8] = matrixModelView(0, 2);  m[12] = matrixModelView(0, 3);
 	m[1] = matrixModelView(1, 0); m[5] = matrixModelView(1, 1);  m[9] = matrixModelView(1, 2);  m[13] = matrixModelView(1, 3);
 	m[2] = matrixModelView(2, 0); m[6] = matrixModelView(2, 1);  m[10] = matrixModelView(2, 2); m[14] = matrixModelView(2, 3);
 	m[3] = matrixModelView(3, 0); m[7] = matrixModelView(3, 1);  m[11] = matrixModelView(3, 2);  m[15] = matrixModelView(3, 3);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixd(m);
+	glLoadMatrixf(m);
 
-	
+
 
 
 	//float mat[16];  //按照列存储，所以按照行打出来
@@ -493,40 +551,11 @@ void renderScene() {
 	//}
 	//cout << endl;
 
-
-
-	// plot reference grid
-	plotReferenceGrid(20.f);
-	// plot world coordinate axis
-	if (show_axes) plotWorldAxes();
-	//Eigen::Vector3f camera_e = camera.GetCameraE();
-	//camera_position[0] += camera_e.x();
-	//camera_position[1] += camera_e.y();
-	//camera_position[2] += camera_e.z();
-	plotCamera(camera_position);
-
-	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
-
-	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
-	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
-	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
-	
-											 
-	glEnable(GL_LIGHTING); //开启光照模式
-	glEnable(GL_LIGHT0); //开启第0号光源
-	plotTeaTable();
-	glDisable(GL_LIGHT0);
-	glDisable(GL_LIGHTING);
-
-	// plot mesh
-	plotMesh(&s0);
-
 	// display fps in the window
 	frame++;
 	current_time = glutGet(GLUT_ELAPSED_TIME); // milisecond
 	if (current_time - time_stamp > 1000) {
-		sprintf(fps_char, "FPS:%4.2f", frame * 1000.f / (current_time - time_stamp));
+		sprintf(fps_chars, "FPS:%4.2f", frame * 1000.f / (current_time - time_stamp));
 		time_stamp = current_time;
 		frame = 0;
 	}
@@ -536,31 +565,116 @@ void renderScene() {
 	void *font = GLUT_BITMAP_8_BY_13;
 	glPushMatrix();
 	glLoadIdentity();
-	renderBitmapString(5, 30, 0, font, fps_char);
-	renderBitmapString(30, 45, 0, font, (char *)"F1 - Game Mode  640x480 32 bits");
-	renderBitmapString(30, 60, 0, font, (char *)"F2 - Game Mode  800x600 32 bits");
-	renderBitmapString(30, 75, 0, font, (char *)"F3 - Game Mode 1024x768 32 bits");
-	renderBitmapString(30, 90, 0, font, (char *)"F4 - Game Mode 1280x1024 32 bits");
-	string game_mode_screen = "F5 - Game Mode Screen Size " + screen_size + " 32 bits";
-	renderBitmapString(30, 105, 0, font, (char *)game_mode_screen.c_str());
-	renderBitmapString(30, 120, 0, font, (char *)"F6 - Window Mode");
-	renderBitmapString(30, 135, 0, font, (char *)"Esc - Quit");
-	renderBitmapString(30, 150, 0, font, current_mode);
 
+	renderBitmapString(5, 40, 0, font, fps_chars);
+	renderBitmapString(30, 70, 0, font, (char *)"F1 - Full Screen");
+	renderBitmapString(30, 100, 0, font, (char *)"F2 - Window Mode");
+	renderBitmapString(30, 130, 0, font, (char *)"Esc - Quit");
 
 	glPopMatrix();
 	restorePerspProjection();
+
+	plotObject();
+
+	glutSwapBuffers();
+}
+
+void renderSw1Scene() {
+	glutSetWindow(sub_window[1]);
+	// Clear Color and Depth Buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	switch (render_way) {
+	case 0:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	case 1:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		break;
+	case 2:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	default:
+		break;
+	}
+	plotObject();
+	normalKeyStatus();
+	specialKeyStatus();
+	mouseMoveStatus();
+
+	glLoadIdentity();
+	Eigen::Vector3f top_view[4];
+	top_view[0] = camera.GetCameraU();
+	top_view[1] = camera.GetCameraV();
+	top_view[2] = camera.GetCameraW();
+	top_view[3] = camera.GetCameraE();
+
+	gluLookAt(top_view[3].x(), top_view_distance * ((top_view[1]+top_view[3]).y()), top_view[3].z(),
+		      top_view[3].x(), top_view[3].y(), top_view[3].z(), 
+			  -top_view[2].x(), -top_view[2].y(), -top_view[2].z());
 
 
 	glutSwapBuffers();
 }
 
+void renderSw2Scene() {
+	glutSetWindow(sub_window[2]);
+	// Clear Color and Depth Buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	switch (render_way) {
+	case 0:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	case 1:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		break;
+	case 2:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	default:
+		break;
+	}
+	plotObject();
+	normalKeyStatus();
+	specialKeyStatus();
+	mouseMoveStatus();
+
+	glLoadIdentity();
+	Eigen::Vector3f obser_view[4];
+	obser_view[0] = camera.GetCameraU();
+	obser_view[1] = camera.GetCameraV();
+	obser_view[2] = camera.GetCameraW();
+	obser_view[3] = camera.GetCameraE();
+
+	
+	gluLookAt(observation_view_distance + obser_view[3].x(), observation_view_distance + obser_view[3].y(), observation_view_distance + obser_view[3].z(),
+			  obser_view[3].x(), obser_view[3].y(), obser_view[3].z(),
+			  obser_view[1].x(), obser_view[1].y(), obser_view[1].z());
+
+	glutSwapBuffers();
+}
+// Global idle func
+void renderAllScene() {
+	normalKeyStatus();
+	specialKeyStatus();
+	mouseMoveStatus();
+
+	renderSw0Scene();
+	renderSw1Scene();
+	renderSw2Scene();
+}
+
 void processNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27://key ESC
-		glutDestroyMenu(axes_menu);
+	/*	glutDestroyMenu(axes_menu);
 		glutDestroyMenu(fill_menu);
-		glutDestroyMenu(main_menu);
+		glutDestroyMenu(main_menu);*/
+		glutDestroyWindow(sub_window[0]);
+		glutDestroyWindow(sub_window[1]);
+		glutDestroyWindow(sub_window[2]);
+		glutDestroyWindow(main_window);
 		if (glutGameModeGet(GLUT_GAME_MODE_ACTIVE) != 0)
 			glutLeaveGameMode();
 		exit(0); 
@@ -621,88 +735,6 @@ void processSpecialKeys(int key, int x, int y) {
 	case GLUT_KEY_DOWN:
 		special_keys_status[GLUT_KEY_DOWN] = true;
 		break;
-	case GLUT_KEY_F1:
-		// define resolution, color depth
-		glutGameModeString("640x480:32");
-		// enter full screen
-		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
-			glutEnterGameMode();
-			sprintf(game_model_chars, "640x480:32");
-			// register callbacks again
-			// and init OpenGL context
-			init();
-		}
-		else
-			glutGameModeString(game_model_chars);
-		break;
-	case GLUT_KEY_F2:
-		// define resolution, color depth
-		glutGameModeString("800x600:32");
-		// enter full screen
-		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
-			glutEnterGameMode();
-			sprintf(game_model_chars, "800x600:32");
-			// register callbacks again
-			// and init OpenGL context
-			init();
-		}
-		else
-			glutGameModeString(game_model_chars);
-		break;
-	case GLUT_KEY_F3:
-		// define resolution, color depth
-		glutGameModeString("1024x768:32");
-		// enter full screen
-		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
-			glutEnterGameMode();
-			sprintf(game_model_chars, "1024x768:32");
-			// register callbacks again
-			// and init OpenGL context
-			init();
-		}
-		else
-			glutGameModeString(game_model_chars);
-		break;
-	case GLUT_KEY_F4:
-		// define resolution, color depth
-		glutGameModeString("1280x1024:32");
-		// enter full screen
-		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
-			glutEnterGameMode();
-			sprintf(game_model_chars, "1280x1024:32");
-			// register callbacks again
-			// and init OpenGL context
-			init();
-		}
-		else
-			glutGameModeString(game_model_chars);
-		break;
-	case GLUT_KEY_F5:
-		/*screen_height = glutGet(GLUT_SCREEN_HEIGHT);
-		screen_width = glutGet(GLUT_SCREEN_WIDTH);
-		screen_size = std::to_string(screen_width) + "x" + std::to_string(screen_height);*/
-		// define resolution, color depth
-		glutGameModeString(screen_size.c_str());
-		// enter full screen
-		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
-			glutEnterGameMode();
-			sprintf(game_model_chars, screen_size.c_str());
-			// register callbacks again
-			// and init OpenGL context
-			init();
-		}
-		else
-			glutGameModeString(game_model_chars);
-		break;
-	case GLUT_KEY_F6:
-		// return to default window
-		window_height = 600;
-		window_width = 800;
-		if (glutGameModeGet(GLUT_GAME_MODE_ACTIVE) != 0) {
-			glutLeaveGameMode();
-			//init();
-		}
-		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
 	case GLUT_KEY_PAGE_DOWN:
@@ -712,16 +744,6 @@ void processSpecialKeys(int key, int x, int y) {
 	case GLUT_KEY_END:
 		break;
 	}
-
-	if (glutGameModeGet(GLUT_GAME_MODE_ACTIVE) == 0)
-		sprintf(current_mode, "Current Mode: Window");
-	else
-		sprintf(current_mode,
-			"Current Mode: Game Mode %dx%d at %d hertz, %d bpp",
-			glutGameModeGet(GLUT_GAME_MODE_WIDTH),
-			glutGameModeGet(GLUT_GAME_MODE_HEIGHT),
-			glutGameModeGet(GLUT_GAME_MODE_REFRESH_RATE),
-			glutGameModeGet(GLUT_GAME_MODE_PIXEL_DEPTH));
 }
 
 void releaseNormalKeys(unsigned char key, int x, int y) {
@@ -759,6 +781,14 @@ void releaseSpacialKeys(int key, int x, int y) {
 		break;
 	case GLUT_KEY_DOWN:
 		special_keys_status[GLUT_KEY_DOWN] = false;
+		break;
+	case GLUT_KEY_F1:
+		glutFullScreen();
+		break;
+	case GLUT_KEY_F2:
+		window_width = 800;
+		window_height = 800;
+		glutReshapeWindow(window_width, window_height);
 		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
@@ -812,7 +842,6 @@ void processFillMenu(int option) {
 		break;
 	}
 }
-
 void processAxesMenu(int option) {
 	switch (option) {
 	case 0:
@@ -832,7 +861,6 @@ void processMenuStatus(int status, int x, int y) {
 	//else
 		//menuFlag = 0;
 }
-
 void createPopupMenus() {
 	fill_menu = glutCreateMenu(processFillMenu);
 	glutAddMenuEntry("GL_POINT", 0);
@@ -910,12 +938,6 @@ void idle() {
 }
 
 void init() {
-
-	// register callbacks
-	glutDisplayFunc(renderScene);
-	glutReshapeFunc(changeSize);
-	glutIdleFunc(renderScene);
-
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
 
@@ -929,8 +951,8 @@ void init() {
 
 	// OpenGL init
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 	// glClearColor(0.0, 0.0, 0.0, 1.0);//设置清除颜色,黑色背景
-	//glClear(GL_COLOR_BUFFER_BIT);//把窗口清除为当前颜色
 }
 
 
@@ -962,18 +984,31 @@ int main(int argc, char**argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(800, 600);
-	glutCreateWindow("Tutorial");
+	glutInitWindowSize(window_width, window_height);
+	main_window = glutCreateWindow("Tutorial");
 
 
+	// callbacks for main window
+	glutDisplayFunc(renderScene);
+	glutReshapeFunc(changeSize);
+	glutIdleFunc(renderAllScene);
+	init();
+	
+	// init Menus
+	// createPopupMenus();
 
-
-
-	// register callbacks
+	sub_window[0] = glutCreateSubWindow(main_window, border, border, window_width - 2 * border, window_height - border * 3 / 2);
+	glutDisplayFunc(renderSw0Scene);
 	init();
 
-	// init Menus
-	createPopupMenus();
+	sub_window[1] = glutCreateSubWindow(main_window, border, (window_height + border) / 2, window_width / 2 - border * 3 / 2, window_height / 2 - border * 3 / 2);
+	glutDisplayFunc(renderSw1Scene);
+	init();
+
+	sub_window[2] = glutCreateSubWindow(main_window, (window_width + border) / 2, (window_height + border) / 2, window_width / 2 - border * 3 / 2, window_height / 2 - border * 3 / 2);
+	glutDisplayFunc(renderSw2Scene);
+	init();
+	
 
 	// enter GLUT event processing cycle
 	glutMainLoop();
