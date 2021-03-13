@@ -91,6 +91,8 @@ public:
 	Eigen::Vector3f GetCameraE() {
 		return _e;
 	}
+	// load 
+	void LoadForGLMatrix(float* m);
 
 	// translate to position t, similiar with glTranslate();
 	void TranslateTo(const Eigen::Vector3f& t) {

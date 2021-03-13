@@ -490,9 +490,12 @@ void plotObject() {
 	if (show_axes) plotWorldAxes();
 
 	float* camera_e = camera.GetCameraE().data();
+	//camera_position[0] = *camera_e;
+	//camera_position[1] = *(camera_e + 1);
+	//camera_position[2] = *(camera_e + 2);
 	camera_position[0] = *camera_e;
-	camera_position[1] = *(camera_e + 1);
-	camera_position[2] = *(camera_e + 2);
+	camera_position[1] = camera_e[1];
+	camera_position[2] = camera_e[2];
 	plotCamera(camera_position);
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
@@ -545,12 +548,8 @@ void renderSw0Scene() {
 
 	// Reset transformations
 	glLoadIdentity();
-	Eigen::Matrix4f matrixModelView = camera.GetViewMatrix();
 	float m[16];
-	m[0] = matrixModelView(0, 0); m[4] = matrixModelView(0, 1);  m[8] = matrixModelView(0, 2);  m[12] = matrixModelView(0, 3);
-	m[1] = matrixModelView(1, 0); m[5] = matrixModelView(1, 1);  m[9] = matrixModelView(1, 2);  m[13] = matrixModelView(1, 3);
-	m[2] = matrixModelView(2, 0); m[6] = matrixModelView(2, 1);  m[10] = matrixModelView(2, 2); m[14] = matrixModelView(2, 3);
-	m[3] = matrixModelView(3, 0); m[7] = matrixModelView(3, 1);  m[11] = matrixModelView(3, 2);  m[15] = matrixModelView(3, 3);
+	camera.LoadForGLMatrix(m);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(m);
 
@@ -614,9 +613,6 @@ void renderSw1Scene() {
 		break;
 	}
 	plotObject();
-	normalKeyStatus();
-	specialKeyStatus();
-	mouseMoveStatus();
 
 	glLoadIdentity();
 	Eigen::Vector3f top_view[4];
@@ -652,9 +648,7 @@ void renderSw2Scene() {
 		break;
 	}
 	plotObject();
-	normalKeyStatus();
-	specialKeyStatus();
-	mouseMoveStatus();
+
 
 	glLoadIdentity();
 	Eigen::Vector3f obser_view[4];
