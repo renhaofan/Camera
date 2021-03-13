@@ -70,8 +70,8 @@ bool show_axes = true;
 
 // this string keeps the last good setting
 // for the game mode
-char gameModeString[40] = "640x480";
-char currentMode[80];
+char game_model_chars[40] = "640x480";
+char current_mode[80];
 
 // width and height of the window
 int window_height = 600;
@@ -84,16 +84,20 @@ GLCamera camera;
 // camera concerned
 float camera_position[3] = {0.f, 0.f, -10.f};
 float camera_angle[3] = { 0.f, 0.f, 0.f};
-int xOrigin = -1;
-int yOrigin = -1;
-double xLength = 0;
-double yLength = 0;
+float mouse_speed = 0.001f;
+float mouse_delta_move[3] = { 0.f };
+int x_origin = -1;
 
 // teapot
 float teapot_rotate = 0.f;
 bool teapot_is_rotate_bool = false;
 // render way LINE/FILL
 int render_way = 1;
+
+// variables to hold window identifiers
+int main_window;
+int sub_window[3];
+
 
 void init();
 
@@ -407,6 +411,11 @@ void specialKeyStatus() {
 		camera.PitchU(1.f * DEG2RAD * special_key_speed);
 	}
 }
+void mouseMoveStatus() {
+	if (x_origin != -1) {
+		camera.YawV(mouse_delta_move[0]);
+	}
+}
 
 void setOrthoProjection() {
 	// switch to projection mode
@@ -459,7 +468,7 @@ void renderScene() {
 
 	normalKeyStatus();
 	specialKeyStatus();
-
+	mouseMoveStatus();
 
 
 	Eigen::Matrix4f matrixModelView = camera.GetViewMatrix();
@@ -536,7 +545,7 @@ void renderScene() {
 	renderBitmapString(30, 105, 0, font, (char *)game_mode_screen.c_str());
 	renderBitmapString(30, 120, 0, font, (char *)"F6 - Window Mode");
 	renderBitmapString(30, 135, 0, font, (char *)"Esc - Quit");
-	renderBitmapString(30, 150, 0, font, currentMode);
+	renderBitmapString(30, 150, 0, font, current_mode);
 
 
 	glPopMatrix();
@@ -618,13 +627,13 @@ void processSpecialKeys(int key, int x, int y) {
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, "640x480:32");
+			sprintf(game_model_chars, "640x480:32");
 			// register callbacks again
 			// and init OpenGL context
 			init();
 		}
 		else
-			glutGameModeString(gameModeString);
+			glutGameModeString(game_model_chars);
 		break;
 	case GLUT_KEY_F2:
 		// define resolution, color depth
@@ -632,13 +641,13 @@ void processSpecialKeys(int key, int x, int y) {
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, "800x600:32");
+			sprintf(game_model_chars, "800x600:32");
 			// register callbacks again
 			// and init OpenGL context
 			init();
 		}
 		else
-			glutGameModeString(gameModeString);
+			glutGameModeString(game_model_chars);
 		break;
 	case GLUT_KEY_F3:
 		// define resolution, color depth
@@ -646,13 +655,13 @@ void processSpecialKeys(int key, int x, int y) {
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, "1024x768:32");
+			sprintf(game_model_chars, "1024x768:32");
 			// register callbacks again
 			// and init OpenGL context
 			init();
 		}
 		else
-			glutGameModeString(gameModeString);
+			glutGameModeString(game_model_chars);
 		break;
 	case GLUT_KEY_F4:
 		// define resolution, color depth
@@ -660,13 +669,13 @@ void processSpecialKeys(int key, int x, int y) {
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, "1280x1024:32");
+			sprintf(game_model_chars, "1280x1024:32");
 			// register callbacks again
 			// and init OpenGL context
 			init();
 		}
 		else
-			glutGameModeString(gameModeString);
+			glutGameModeString(game_model_chars);
 		break;
 	case GLUT_KEY_F5:
 		/*screen_height = glutGet(GLUT_SCREEN_HEIGHT);
@@ -677,13 +686,13 @@ void processSpecialKeys(int key, int x, int y) {
 		// enter full screen
 		if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)) {
 			glutEnterGameMode();
-			sprintf(gameModeString, screen_size.c_str());
+			sprintf(game_model_chars, screen_size.c_str());
 			// register callbacks again
 			// and init OpenGL context
 			init();
 		}
 		else
-			glutGameModeString(gameModeString);
+			glutGameModeString(game_model_chars);
 		break;
 	case GLUT_KEY_F6:
 		// return to default window
@@ -705,9 +714,9 @@ void processSpecialKeys(int key, int x, int y) {
 	}
 
 	if (glutGameModeGet(GLUT_GAME_MODE_ACTIVE) == 0)
-		sprintf(currentMode, "Current Mode: Window");
+		sprintf(current_mode, "Current Mode: Window");
 	else
-		sprintf(currentMode,
+		sprintf(current_mode,
 			"Current Mode: Game Mode %dx%d at %d hertz, %d bpp",
 			glutGameModeGet(GLUT_GAME_MODE_WIDTH),
 			glutGameModeGet(GLUT_GAME_MODE_HEIGHT),
@@ -762,6 +771,26 @@ void releaseSpacialKeys(int key, int x, int y) {
 	}
 }
 
+void mouseButton(int button, int state, int x, int y) {
+
+	// only start motion if the left button is pressed
+	if (button == GLUT_LEFT_BUTTON) {
+		// when the buttion is released
+		if (state == GLUT_UP) {
+			camera_angle[0] = 0.f;
+			x_origin = -1;
+		}
+		else { // state == GLUT_DOWN
+			x_origin = x;
+		}
+	}
+}
+void mouseMove(int x, int y) {
+	// this will only be true when the left button is down
+	if (x_origin >= 0) {
+		mouse_delta_move[0] = (x - x_origin) * mouse_speed;
+	}
+}
 
 void processMainMenu(int option) {
 
@@ -895,8 +924,8 @@ void init() {
 	glutSpecialUpFunc(releaseSpacialKeys);
 	
 	// mouse
-	//glutMouseFunc(mouseButton);
-	//glutMotionFunc(mouseMove);
+	glutMouseFunc(mouseButton);
+	glutMotionFunc(mouseMove);
 
 	// OpenGL init
 	glEnable(GL_DEPTH_TEST);
@@ -933,8 +962,10 @@ int main(int argc, char**argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(600, 800);
+	glutInitWindowSize(800, 600);
 	glutCreateWindow("Tutorial");
+
+
 
 
 
