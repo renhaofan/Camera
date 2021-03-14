@@ -1,16 +1,14 @@
-# GLUT_demo This is a simple demo concerning OpenGL and GLUT to describe some attributes about them. 
+# GLUT_demo 
+This is a simple demo concerning OpenGL and GLUT to describe some attributes about them. 
 
 ![Demo](https://github.com/renhaofan/GLUT_demo/blob/main/xyzCameraV3/demo.png) 
 
-# KeyBoard Control 
-<kbd>w</kbd> - camera move forward 
+# KeyBoard Control
+## Camera 
+<kbd>w</kbd> - camera move forward. <kbd>s</kbd> - camera move backward 
 
-<kbd>s</kbd> - camera move backward 
+<kbd>a</kbd> - camera move left. <kbd>d</kbd> - camera move right 
 
-<kbd>a</kbd> - camera move left 
+<kbd>q</kbd> - camera move up. <kbd>e</kbd> - camera move down
 
-<kbd>d</kbd> - camera move right 
-
-<kbd>q</kbd> - camera move up 
-
-<kbd>e</kbd> - camera move down 
+<kbd>$\leftarrow$</kbd> and <kbd>$\rightarrow$</kbd>rotate around axis v
