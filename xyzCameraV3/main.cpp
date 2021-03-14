@@ -227,16 +227,20 @@ void plotWorldAxes() {
 	glPopMatrix();
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
+	if (gridSize <= 1.f || start < 0) {
+		std::cerr << "less than one | start < 0" << "\n";
+		return;
+	}
 	glPushMatrix();
 	glColor3f(0.5f, 0.5, 0.5); // gray color
-	for (float i = -start; i <= start; i++) {
+	for (float i = -start; i <= start; i += gridSize) {
 		glBegin(GL_LINES);
-		glVertex3f(i*gridSize, -1.f, -start);
-		glVertex3f(i*gridSize, -1.f, start);
-		glEnd(); 
+		glVertex3f(-start, -1.f, i);
+		glVertex3f(start, -1.f, i);
+		glEnd();
 		glBegin(GL_LINES);
-		glVertex3f(-start, -1.f, i*gridSize);
-		glVertex3f(start, -1.f, i*gridSize);
+		glVertex3f(i, -1.f, -start);
+		glVertex3f(i, -1.f, start);
 		glEnd();
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
