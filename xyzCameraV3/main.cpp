@@ -72,7 +72,7 @@ bool show_axes = true;
 
 // width and height of the window
 int window_height = 800;
-int window_width = 800;
+int window_width = 1024;
 int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 
@@ -81,6 +81,7 @@ GLCamera camera;
 // camera concerned
 float camera_position[3] = {0.f, 0.f, -10.f};
 float camera_angle[3] = { 0.f, 0.f, 0.f};
+float camera_axes[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
 float mouse_speed = 0.001f;
 float mouse_delta_move[3] = { 0.f };
 int x_origin = -1;
@@ -116,7 +117,7 @@ void setProjection(int w1, int h1) {
 	glViewport(0, 0, w1, h1);
 
 	// Set the clipping volume
-	gluPerspective(45, ratio, 0.1, 1000);
+	gluPerspective(45, ratio, 2, 1000);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -232,6 +233,8 @@ void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
 		glBegin(GL_LINES);
 		glVertex3f(i*gridSize, -1.f, -start);
 		glVertex3f(i*gridSize, -1.f, start);
+		glEnd(); 
+		glBegin(GL_LINES);
 		glVertex3f(-start, -1.f, i*gridSize);
 		glVertex3f(start, -1.f, i*gridSize);
 		glEnd();
@@ -310,13 +313,12 @@ void plotCamera(float* position) {
 	std::vector<float> s;
 	// axis concerned
 	float axis_length = length;
-
-
+	Eigen::Vector3f v = camera.GetCameraV();
 	// draw camera body
 	glPushMatrix();
 	glColor3f(1.f, 1.f, 1.f);
 	glTranslatef(position[0], position[1], position[2]);
-	glRotatef(180, 0, 1, 0);
+	glRotatef(camera_angle[1], v.x(), v.y(), v.z());
 	glScalef(length, height, width);
 	glutSolidCube(1.f);
 	glPopMatrix();
@@ -324,15 +326,15 @@ void plotCamera(float* position) {
 	// draw lens
 	glPushMatrix();
 	glTranslatef(position[0], position[1], position[2]);
-	glRotatef(180, 0, 1, 0);
+	glRotatef(camera_angle[1], v.x(), v.y(), v.z());
 	glBegin(GL_QUAD_STRIP);
 	for (size_t i = 0; i <= 360; i += 15) {
 		float p = i * 3.14 / 180;
 		float sinp = std::sin(p);
 		float cosp = std::cos(p);
 		glColor3f(sin(p), cos(p), 1.0f);
-		glVertex3f(sinp * radius, cosp * radius, width / 2);
-		glVertex3f(sinp * radius, cosp * radius, width);
+		glVertex3f(sinp * radius, cosp * radius, -width / 2);
+		glVertex3f(sinp * radius, cosp * radius, -width);
 		s.push_back(sinp);
 		s.push_back(cosp);
 	}
@@ -346,26 +348,26 @@ void plotCamera(float* position) {
 	radius = width / 4;
 	glPushMatrix();
 	glTranslatef(position[0], position[1], position[2]);
-	glRotatef(180, 0, 1, 0);
+	glRotatef(camera_angle[1], v.x(), v.y(), v.z());
 	glBegin(GL_QUAD_STRIP);
 	for (size_t i = 0; i < vsize; ++i) {
 		float p = i * 3.14 / 180;
 		float sinp = s[i * 2];
 		float cosp = s[i * 2 + 1];
 		glColor3f(sinp, cosp, 1.0f);
-		glVertex3f(sinp * radius - length/2+radius+0.1f, height/2, cosp * radius);
-		glVertex3f(sinp * radius - length/2+radius+0.1f, height/2+button_height, cosp * radius);
+		glVertex3f(sinp * radius + length/3, height/2, cosp * radius);
+		glVertex3f(sinp * radius + length/3, height/2+button_height, cosp * radius);
 	}
 	glEnd();
 	// draw cover of button
 	glBegin(GL_TRIANGLE_FAN);         
-	glVertex3f(-length / 2 + radius + 0.1f, height / 2 + button_height, 0.0f);
+	glVertex3f(length/3, height / 2 + button_height, 0.0f);
 	for (size_t i = 0; i < vsize; ++i) {
 		float p = i * 3.14 / 180;
 		float sinp = s[i * 2];
 		float cosp = s[i * 2 + 1];
 		glColor3f(sinp, cosp, tan(p));
-		glVertex3f(sinp * radius - length / 2 + radius + 0.1f, height / 2 + button_height, cosp * radius);
+		glVertex3f(sinp * radius + length / 3, height / 2 + button_height, cosp * radius);
 	}
 	glEnd();
 	glPopMatrix();
@@ -374,15 +376,15 @@ void plotCamera(float* position) {
 	glPushMatrix();
 	glLineWidth(5.0f);
 	glTranslatef(position[0], position[1], position[2]);
-	glRotatef(180, 0, 1, 0);
+	glRotatef(camera_angle[1], v.x(), v.y(), v.z());
 	glBegin(GL_LINES);
 	glColor3f(1.f, 0.f, 0.f); // u
 	glVertex3f(0.f, 0.0f, 0.0f);
-	glVertex3f(-axis_length, 0.0f, 0.0f);
+	glVertex3f(axis_length, 0.0f, 0.0f);
 	glColor3f(0.f, 1.f, 0.f); // v
 	glVertex3f(0.f, 0.0f, 0.0f);
 	glVertex3f(0.f, axis_length, 0.0f);
-	glColor3f(0.f, 0.f, 1.f); // -w
+	glColor3f(0.f, 0.f, 1.f); // w
 	glVertex3f(0.f, 0.0f, 0.0f);
 	glVertex3f(0.f, 0.f, axis_length);
 	glEnd();
@@ -439,16 +441,20 @@ void normalKeyStatus() {
 }
 void specialKeyStatus() {
 	if (special_keys_status[GLUT_KEY_LEFT]) {
+		camera_angle[1] += 1.f * special_key_speed;
 		camera.YawV(-1.f * DEG2RAD * special_key_speed);
 	}
 	if (special_keys_status[GLUT_KEY_RIGHT]) {
+		camera_angle[1] += -1.f * special_key_speed;
 		camera.YawV(1.f * DEG2RAD * special_key_speed);
 	}
 	if (special_keys_status[GLUT_KEY_UP]) {
-		camera.PitchU(-1.f * DEG2RAD * special_key_speed);
+		/*camera_angle[0] += 1.f * special_key_speed;
+		camera.PitchU(-1.f * DEG2RAD * special_key_speed);*/
 	}
 	if (special_keys_status[GLUT_KEY_DOWN]) {
-		camera.PitchU(1.f * DEG2RAD * special_key_speed);
+	/*	camera_angle[0] += -1.f * special_key_speed;
+		camera.PitchU(1.f * DEG2RAD * special_key_speed);*/
 	}
 }
 void mouseMoveStatus() {
@@ -483,20 +489,85 @@ void restorePerspProjection() {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void plotTest() {
+	
+	Eigen::Vector3f ee = camera.GetCameraE();
+	Eigen::Vector3f v = camera.GetCameraV();
+	Eigen::Vector3f u = camera.GetCameraU();
+	
+	glPushMatrix();
+	glTranslatef(ee[0], ee[1], ee[2]);
+	glRotatef(camera_angle[1], v.x(), v.y(), v.z());
+	//glRotatef(camera_angle[0], u.x(), u.y(), u.z());
+	glRotatef(90, 0, 1, 0);
+	glColor3f(1, 1, 0);
+	glutSolidTeapot(1.f);
+	glPopMatrix();
+
+	
+	glPushMatrix();
+	glLineWidth(5.0f);
+	glTranslatef(ee[0], ee[1], ee[2]);
+	glBegin(GL_LINES);
+	glColor3f(1.f, 0.f, 0.f); // u
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(1.f, 0.0f, 0.0f);
+	glColor3f(0.f, 1.f, 0.f); // v
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(0.f, 1.f, 0.0f);
+	glColor3f(0.f, 0.f, 1.f); // w
+	glVertex3f(0.f, 0.0f, 0.0f);
+	glVertex3f(0.f, 0.f, 1.f);
+	glEnd();
+	glLineWidth(1.0f);
+	glPopMatrix();
+
+	//Eigen::Matrix4f translate; translate.setIdentity();
+	//Eigen::Matrix4f rotation; rotation.setIdentity();
+	//translate.block<3, 1>(0, 3) = camera.GetCameraE();
+	//rotation(0, 0) = rotation(2, 2)= std::cos(90 * RAD2DEG);
+	//rotation(0, 2) = std::sin(90 * RAD2DEG);
+	//rotation(2, 0) = -std::sin(90 * RAD2DEG);
+	//rotation = rotation * translate;
+	
+	//float m[16];
+	//m[0] = rotation(0, 0); m[4] = rotation(0, 1);  m[8] = rotation(0, 2);  m[12] = rotation(0, 3);
+	//m[1] = rotation(1, 0); m[5] = rotation(1, 1);  m[9] = rotation(1, 2);  m[13] = rotation(1, 3);
+	//m[2] = rotation(2, 0); m[6] = rotation(2, 1);  m[10] = rotation(2, 2); m[14] = rotation(2, 3);
+	//m[3] = rotation(3, 0); m[7] = rotation(3, 1);  m[11] = rotation(3, 2);  m[15] = rotation(3, 3);
+	//// glMatrixMode(GL_MODELVIEW);
+	//glLoadMatrixf(m);
+
+	
+	//float mat[16];  //按照列存储，所以按照行打出来
+	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+	//for (int index = 0; index < 4; index++) {
+	//	for (int i = 0; i < 4; ++i) {
+	//		printf("%f ", mat[index + i * 4]);
+	//	}
+	//	cout << endl;
+	//}
+	//cout << endl;
+	/*glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixd(m);*/
+}
+
 void plotObject() {
 	// plot reference grid
-	plotReferenceGrid(20.f);
+	plotReferenceGrid(40.f);
 	// plot world coordinate axis
 	if (show_axes) plotWorldAxes();
 
-	float* camera_e = camera.GetCameraE().data();
+	//cu = camera.GetCameraE().data();
+	//cv = camera.GetCameraV().data();
+	//cw = camera.GetCameraW().data();
 	//camera_position[0] = *camera_e;
 	//camera_position[1] = *(camera_e + 1);
 	//camera_position[2] = *(camera_e + 2);
-	camera_position[0] = *camera_e;
-	camera_position[1] = camera_e[1];
-	camera_position[2] = camera_e[2];
-	plotCamera(camera_position);
+	//camera_position[0] = camera_e[0];
+	//camera_position[1] = camera_e[1];
+	//camera_position[2] = camera_e[2];
+	plotCamera(camera.GetCameraE().data());
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
 	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
@@ -507,11 +578,17 @@ void plotObject() {
 
 	glEnable(GL_LIGHTING); //开启光照模式
 	glEnable(GL_LIGHT0); //开启第0号光源
+	glPushMatrix();
+	glTranslatef(10.f, 0.f, -10.f);
 	plotTeaTable();
+	glPopMatrix();
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
 	// plot mesh
-	plotMesh(&s0);
+	// plotMesh(&s0);
+
+	// plotTest();
+
 }
 
 // Display func for main window
@@ -549,7 +626,7 @@ void renderSw0Scene() {
 	// Reset transformations
 	glLoadIdentity();
 	float m[16];
-	camera.LoadForGLMatrix(m);
+	camera.LoadToGLMatrix(m);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(m);
 
@@ -580,7 +657,7 @@ void renderSw0Scene() {
 	void *font = GLUT_BITMAP_8_BY_13;
 	glPushMatrix();
 	glLoadIdentity();
-
+	glColor3f(1.f, 1.f, 1.f);
 	renderBitmapString(5, 40, 0, font, fps_chars);
 	renderBitmapString(30, 70, 0, font, (char *)"F1 - Full Screen");
 	renderBitmapString(30, 100, 0, font, (char *)"F2 - Window Mode");
@@ -615,16 +692,22 @@ void renderSw1Scene() {
 	plotObject();
 
 	glLoadIdentity();
-	Eigen::Vector3f top_view[4];
-	top_view[0] = camera.GetCameraU();
-	top_view[1] = camera.GetCameraV();
-	top_view[2] = camera.GetCameraW();
-	top_view[3] = camera.GetCameraE();
+	/*Eigen::Vector3f top_view_u = camera.GetCameraU();
+	Eigen::Vector3f top_view_v = camera.GetCameraV();
+	Eigen::Vector3f top_view_w = camera.GetCameraW();
+	Eigen::Vector3f top_view_e = camera.GetCameraE();
 
-	gluLookAt(top_view[3].x(), top_view_distance * ((top_view[1]+top_view[3]).y()), top_view[3].z(),
-		      top_view[3].x(), top_view[3].y(), top_view[3].z(), 
-			  -top_view[2].x(), -top_view[2].y(), -top_view[2].z());
-
+	gluLookAt(top_view_e.x()+ top_view_v.x(), top_view_distance* (top_view_e.y() + top_view_v.y()), top_view_e.z() + top_view_v.z(),
+		top_view_e.x(), top_view_e.y(), top_view_e.z(),
+		-top_view_w.x(), -top_view_w.y(), -top_view_w.z()
+	);*/
+	camera.PushViewMatrix();
+	camera.ShiftUp(top_view_distance);
+	camera.PitchU(3.1415926f/2);
+	float m[16];
+	camera.LoadToGLMatrix(m);
+	camera.PopViewMatrix();
+	glLoadMatrixf(m);
 
 	glutSwapBuffers();
 }
@@ -651,16 +734,9 @@ void renderSw2Scene() {
 
 
 	glLoadIdentity();
-	Eigen::Vector3f obser_view[4];
-	obser_view[0] = camera.GetCameraU();
-	obser_view[1] = camera.GetCameraV();
-	obser_view[2] = camera.GetCameraW();
-	obser_view[3] = camera.GetCameraE();
-
-	
-	gluLookAt(observation_view_distance + obser_view[3].x(), observation_view_distance + obser_view[3].y(), observation_view_distance + obser_view[3].z(),
-			  obser_view[3].x(), obser_view[3].y(), obser_view[3].z(),
-			  obser_view[1].x(), obser_view[1].y(), obser_view[1].z());
+	gluLookAt(20, 20, 20,
+		0, 0, 0,
+		0, 1, 0);
 
 	glutSwapBuffers();
 }
@@ -796,7 +872,7 @@ void releaseSpacialKeys(int key, int x, int y) {
 		glutFullScreen();
 		break;
 	case GLUT_KEY_F2:
-		window_width = 800;
+		window_width = 1024;
 		window_height = 800;
 		glutReshapeWindow(window_width, window_height);
 		break;
@@ -1019,7 +1095,6 @@ int main(int argc, char**argv) {
 	glutDisplayFunc(renderSw2Scene);
 	init();
 	
-
 	// enter GLUT event processing cycle
 	glutMainLoop();
 

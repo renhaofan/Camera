@@ -284,14 +284,24 @@ void GLCamera::RollW(float angle) {
 
 }
 
+#pragma endregion(rotation)
+
+
+
 // load OpenGL matrix is col-major
-void GLCamera::LoadForGLMatrix(float* m) {
+void GLCamera::LoadToGLMatrix(float* m) {
 	m[0] = _view_matrix(0, 0); m[4] = _view_matrix(0, 1);  m[8] = _view_matrix(0, 2);  m[12] = _view_matrix(0, 3);
 	m[1] = _view_matrix(1, 0); m[5] = _view_matrix(1, 1);  m[9] = _view_matrix(1, 2);  m[13] = _view_matrix(1, 3);
 	m[2] = _view_matrix(2, 0); m[6] = _view_matrix(2, 1);  m[10] = _view_matrix(2, 2); m[14] = _view_matrix(2, 3);
 	m[3] = _view_matrix(3, 0); m[7] = _view_matrix(3, 1);  m[11] = _view_matrix(3, 2);  m[15] = _view_matrix(3, 3);
 }
 
-
-
-#pragma endregion(rotation)
+void GLCamera::PushViewMatrix() {
+	view_stack.push(_view_matrix);
+}
+void GLCamera::PopViewMatrix() {
+	if (!view_stack.empty()) {
+		SetViewMatrix(view_stack.top());
+		view_stack.pop();
+	}
+}

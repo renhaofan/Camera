@@ -20,6 +20,7 @@ Note: gazing direction is -w, not w, u is up-direction
 
 
 #include <iostream>
+#include <stack>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
@@ -92,7 +93,7 @@ public:
 		return _e;
 	}
 	// load 
-	void LoadForGLMatrix(float* m);
+	void LoadToGLMatrix(float* m);
 
 	// translate to position t, similiar with glTranslate();
 	void TranslateTo(const Eigen::Vector3f& t) {
@@ -123,7 +124,9 @@ public:
 	void YawV(float angle);
 	void RollW(float angle);
 
-
+	// for multiple view
+	void PushViewMatrix();
+	void PopViewMatrix();
 
 
 	// to vector homogeneous coordinates
@@ -151,4 +154,6 @@ private:
 	Eigen::Matrix4f _view_matrix;
 	Eigen::Matrix4f _view_rotate_matrix; // x,y,z  row-major
 	Eigen::Matrix4f _view_translate_matrix;
+
+	std::stack<Eigen::Matrix4f> view_stack;
 };
