@@ -11,4 +11,13 @@ This is a simple demo concerning OpenGL and GLUT to describe some attributes abo
 
 <kbd>q</kbd> - camera move up. <kbd>e</kbd> - camera move down
 
-<kbd>$\leftarrow$</kbd> and <kbd>$\rightarrow$</kbd>rotate around axis v
+<kbd>←</kbd> and <kbd>←</kbd>rotate around axis v
+
+<kbd>↑</kbd>, <kbd>↓</kbd> plotCamera not set.
+## Scene
+
+<kbd>/</kbd> - show world axes.
+
+<kbd>r</kbd> - teapot rotation. 
+
+<kbd>m</kbd> - polygon mode. 
