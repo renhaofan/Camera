@@ -754,15 +754,6 @@ void renderAllScene() {
 void processNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27://key ESC
-	/*	glutDestroyMenu(axes_menu);
-		glutDestroyMenu(fill_menu);
-		glutDestroyMenu(main_menu);*/
-		glutDestroyWindow(sub_window[0]);
-		glutDestroyWindow(sub_window[1]);
-		glutDestroyWindow(sub_window[2]);
-		glutDestroyWindow(main_window);
-		if (glutGameModeGet(GLUT_GAME_MODE_ACTIVE) != 0)
-			glutLeaveGameMode();
 		exit(0); 
 		break; 
 	case 'w': normal_keys_status['w'] = true; break;
@@ -834,12 +825,6 @@ void processSpecialKeys(int key, int x, int y) {
 
 void releaseNormalKeys(unsigned char key, int x, int y) {
 	switch (key) {
-	case 27:
-		glutDestroyMenu(main_menu);
-		glutDestroyMenu(axes_menu);
-		glutDestroyMenu(fill_menu);
-		exit(0); 
-		break; //key ESC
 	case 'w': normal_keys_status['w'] = false; break;
 	case 'W': normal_keys_status['W'] = false; break;
 	case 's': normal_keys_status['s'] = false; break;
