@@ -3,9 +3,14 @@
 ![Demo](https://github.com/renhaofan/GLUT_demo/blob/main/xyzCameraV3/demo.png) 
 
 # KeyBoard Control 
-`w` - camera move forward 
-`s` - camera move backward 
-`a` - camera move left 
-`d` - camera move right 
-`q` - camera move up 
-`e` - camera move down 
+<kbd>w</kbd> - camera move forward 
+
+<kbd>s</kbd> - camera move backward 
+
+<kbd>a</kbd> - camera move left 
+
+<kbd>d</kbd> - camera move right 
+
+<kbd>q</kbd> - camera move up 
+
+<kbd>e</kbd> - camera move down 
