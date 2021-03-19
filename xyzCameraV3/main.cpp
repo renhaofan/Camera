@@ -75,7 +75,7 @@ int window_height = 800;
 int window_width = 1024;
 int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
 int screen_width = glutGet(GLUT_SCREEN_WIDTH);
-
+bool full_screen = false;
 
 GLCamera camera;
 // camera concerned
@@ -227,7 +227,7 @@ void plotWorldAxes() {
 	glPopMatrix();
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
-	if (gridSize <= 1.f || start < 0) {
+	if (gridSize < 1.f || start < 0) {
 		std::cerr << "less than one | start < 0" << "\n";
 		return;
 	}
@@ -558,7 +558,7 @@ void plotTest() {
 
 void plotObject() {
 	// plot reference grid
-	plotReferenceGrid(40.f);
+	plotReferenceGrid(100.f, 1.f);
 	// plot world coordinate axis
 	if (show_axes) plotWorldAxes();
 
@@ -574,20 +574,20 @@ void plotObject() {
 	plotCamera(camera.GetCameraE().data());
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
-	GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
-	GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
-	glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
-	glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
+	//GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // 定义颜色
+	//GLfloat light_pos[] = { 5,5,5,1 };  //定义光源位置
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //设置第0号光源的光照位置
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, white); //设置第0号光源多次反射后的光照颜色（环境光颜色）
 
 
-	glEnable(GL_LIGHTING); //开启光照模式
-	glEnable(GL_LIGHT0); //开启第0号光源
-	glPushMatrix();
-	glTranslatef(10.f, 0.f, -10.f);
-	plotTeaTable();
-	glPopMatrix();
-	glDisable(GL_LIGHT0);
-	glDisable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING); //开启光照模式
+	//glEnable(GL_LIGHT0); //开启第0号光源
+	//glPushMatrix();
+	//glTranslatef(10.f, 0.f, -10.f);
+	//plotTeaTable();
+	//glPopMatrix();
+	//glDisable(GL_LIGHT0);
+	//glDisable(GL_LIGHTING);
 	// plot mesh
 	// plotMesh(&s0);
 
@@ -663,9 +663,8 @@ void renderSw0Scene() {
 	glLoadIdentity();
 	glColor3f(1.f, 1.f, 1.f);
 	renderBitmapString(5, 40, 0, font, fps_chars);
-	renderBitmapString(30, 70, 0, font, (char *)"F1 - Full Screen");
-	renderBitmapString(30, 100, 0, font, (char *)"F2 - Window Mode");
-	renderBitmapString(30, 130, 0, font, (char *)"Esc - Quit");
+	renderBitmapString(30, 70, 0, font, (char *)"F11 - Full Screen/Window Mode");
+	renderBitmapString(30, 100, 0, font, (char *)"Esc - Quit");
 
 	glPopMatrix();
 	restorePerspProjection();
@@ -760,6 +759,9 @@ void processNormalKeys(unsigned char key, int x, int y) {
 	case 27://key ESC
 		exit(0); 
 		break; 
+	case 13:// key enter
+		// normal_keys_status[13] = true;
+		break;
 	case 'w': normal_keys_status['w'] = true; break;
 	case 'W': normal_keys_status['W'] = true; break;
 	
@@ -816,6 +818,14 @@ void processSpecialKeys(int key, int x, int y) {
 	case GLUT_KEY_DOWN:
 		special_keys_status[GLUT_KEY_DOWN] = true;
 		break;
+	case GLUT_KEY_F11:
+		full_screen = !full_screen;
+		if (full_screen) {
+			glutFullScreen();
+		} else {
+			glutReshapeWindow(window_width, window_height);
+		}
+		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
 	case GLUT_KEY_PAGE_DOWN:
@@ -857,13 +867,9 @@ void releaseSpacialKeys(int key, int x, int y) {
 	case GLUT_KEY_DOWN:
 		special_keys_status[GLUT_KEY_DOWN] = false;
 		break;
-	case GLUT_KEY_F1:
-		glutFullScreen();
+	case GLUT_KEY_F11:
 		break;
-	case GLUT_KEY_F2:
-		window_width = 1024;
-		window_height = 800;
-		glutReshapeWindow(window_width, window_height);
+	case GLUT_KEY_F12:
 		break;
 	case GLUT_KEY_PAGE_UP:
 		break;
