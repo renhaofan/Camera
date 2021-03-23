@@ -221,9 +221,9 @@ void plotWorldAxes() {
 	glPopMatrix();
 
 	glPushMatrix();
-	renderBitmapString(half_length + 0.3f, 0.f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"X");
-	renderBitmapString(0.f, half_length + 0.3f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Y");
-	renderBitmapString(0.f, 0.f, half_length + 0.3f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"Z");
+	renderBitmapString(half_length + 0.3f, 0.f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"+X");
+	renderBitmapString(0.f, half_length + 0.3f, 0.f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"+Y");
+	renderBitmapString(0.f, 0.f, half_length + 0.3f, GLUT_BITMAP_TIMES_ROMAN_24, (char*)"+Z");
 	glPopMatrix();
 }
 void plotReferenceGrid(float start = 20.0f, float gridSize = 1.0f) {
@@ -635,17 +635,17 @@ void renderSw0Scene() {
 	glLoadMatrixf(m);
 
 
+	camera.PrintInfo();
 
-
-	//float mat[16];  //按照列存储，所以按照行打出来
-	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-	//for (int index = 0; index < 4; index++) {
-	//	for (int i = 0; i < 4; ++i) {
-	//		printf("%f ", mat[index + i * 4]);
-	//	}
-	//	cout << endl;
-	//}
-	//cout << endl;
+	float mat[16];  //按照列存储，所以按照行打出来
+	glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+	for (int index = 0; index < 4; index++) {
+		for (int i = 0; i < 4; ++i) {
+			printf("%f ", mat[index + i * 4]);
+		}
+		cout << endl;
+	}
+	cout << endl;
 
 	// display fps in the window
 	frame++;
