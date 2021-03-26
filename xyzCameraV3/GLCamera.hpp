@@ -24,8 +24,8 @@ Note: gazing direction is -w, not w, u is up-direction
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-
-
+#include <limits>
+typedef std::numeric_limits<float> dfl;
 class GLCamera {
 public:
 	GLCamera();

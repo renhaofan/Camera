@@ -15,13 +15,15 @@ GLCamera::~GLCamera() {
 }
 
 void GLCamera::PrintInfo() {
-	std::cout << "Camera position: \n" << _e << "\n";
+	// make sure conversion of a floating-point value to text and back is exact using max_digits10
+	std::cout.precision(dfl::max_digits10);
+	std::cout << "Camera Position: \n" << _e << "\n";
 	std::cout << "u: " << _u.transpose() << "\n";
 	std::cout << "v: " << _v.transpose() << "\n";
 	std::cout << "w: " << _w.transpose() << "\n";
 	std::cout << " _view_rotate_matrix: \n" << _view_rotate_matrix << "\n";
 	std::cout << " _view_translate_matrix:\n " << _view_translate_matrix << "\n";
-	std::cout << " _view_matrix:\n " << _view_matrix << "\n";
+	std::cout << " _view_matrix:\n " << _view_matrix << "\n\n";
 
 }
 
