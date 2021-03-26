@@ -124,11 +124,6 @@ public:
 	void YawV(float angle);
 	void RollW(float angle);
 
-	// for multiple view
-	void PushViewMatrix();
-	void PopViewMatrix();
-
-
 	// to vector homogeneous coordinates
 	Eigen::Vector4f ToHomogeneous(const Eigen::Vector3f& v) {
 		return Eigen::Vector4f(v.x(), v.y(), v.z(), 0);
@@ -143,6 +138,8 @@ public:
 		}
 	}
 
+	// operator
+	GLCamera& operator=(const GLCamera& cam);
 
 protected:
 
@@ -154,6 +151,4 @@ private:
 	Eigen::Matrix4f _view_matrix;
 	Eigen::Matrix4f _view_rotate_matrix; // x,y,z  row-major
 	Eigen::Matrix4f _view_translate_matrix;
-
-	std::stack<Eigen::Matrix4f> view_stack;
-};
+};   

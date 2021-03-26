@@ -292,18 +292,21 @@ void GLCamera::RollW(float angle) {
 
 // load OpenGL matrix is col-major
 void GLCamera::LoadToGLMatrix(float* m) {
+	// Eigen pointer is also col-major
 	m[0] = _view_matrix(0, 0); m[4] = _view_matrix(0, 1);  m[8] = _view_matrix(0, 2);  m[12] = _view_matrix(0, 3);
 	m[1] = _view_matrix(1, 0); m[5] = _view_matrix(1, 1);  m[9] = _view_matrix(1, 2);  m[13] = _view_matrix(1, 3);
 	m[2] = _view_matrix(2, 0); m[6] = _view_matrix(2, 1);  m[10] = _view_matrix(2, 2); m[14] = _view_matrix(2, 3);
 	m[3] = _view_matrix(3, 0); m[7] = _view_matrix(3, 1);  m[11] = _view_matrix(3, 2);  m[15] = _view_matrix(3, 3);
 }
 
-void GLCamera::PushViewMatrix() {
-	view_stack.push(_view_matrix);
-}
-void GLCamera::PopViewMatrix() {
-	if (!view_stack.empty()) {
-		SetViewMatrix(view_stack.top());
-		view_stack.pop();
-	}
+// operator;
+GLCamera& GLCamera::operator=(const GLCamera& cam) {
+	this->_u = cam._u;
+	this->_v = cam._v;
+	this->_w = cam._w;
+	this->_e = cam._e;
+	this->_view_matrix = cam._view_matrix;
+	this->_view_rotate_matrix = cam._view_rotate_matrix;
+	this->_view_translate_matrix = cam._view_translate_matrix;
+	return *this;
 }

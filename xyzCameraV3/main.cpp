@@ -78,6 +78,7 @@ int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 bool full_screen = false;
 
 GLCamera camera;
+GLCamera top_view_camera;
 // camera concerned
 float camera_position[3] = {0.f, 0.f, -10.f};
 float camera_angle[3] = { 0.f, 0.f, 0.f};
@@ -637,15 +638,15 @@ void renderSw0Scene() {
 
 	camera.PrintInfo();
 
-	float mat[16];  //按照列存储，所以按照行打出来
-	glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-	for (int index = 0; index < 4; index++) {
-		for (int i = 0; i < 4; ++i) {
-			printf("%f ", mat[index + i * 4]);
-		}
-		cout << endl;
-	}
-	cout << endl;
+	//float mat[16];  //按照列存储，所以按照行打出来
+	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+	//for (int index = 0; index < 4; index++) {
+	//	for (int i = 0; i < 4; ++i) {
+	//		printf("%f ", mat[index + i * 4]);
+	//	}
+	//	cout << endl;
+	//}
+	//cout << endl;
 
 	// display fps in the window
 	frame++;
@@ -695,21 +696,12 @@ void renderSw1Scene() {
 	plotObject();
 
 	glLoadIdentity();
-	/*Eigen::Vector3f top_view_u = camera.GetCameraU();
-	Eigen::Vector3f top_view_v = camera.GetCameraV();
-	Eigen::Vector3f top_view_w = camera.GetCameraW();
-	Eigen::Vector3f top_view_e = camera.GetCameraE();
 
-	gluLookAt(top_view_e.x()+ top_view_v.x(), top_view_distance* (top_view_e.y() + top_view_v.y()), top_view_e.z() + top_view_v.z(),
-		top_view_e.x(), top_view_e.y(), top_view_e.z(),
-		-top_view_w.x(), -top_view_w.y(), -top_view_w.z()
-	);*/
-	camera.PushViewMatrix();
-	camera.ShiftUp(top_view_distance);
-	camera.PitchU(3.1415926f/2);
+	top_view_camera = camera;
+	top_view_camera.ShiftUp(top_view_distance);
+	top_view_camera.PitchU(3.1415926f / 2);
 	float m[16];
-	camera.LoadToGLMatrix(m);
-	camera.PopViewMatrix();
+	top_view_camera.LoadToGLMatrix(m);
 	glLoadMatrixf(m);
 
 	glutSwapBuffers();
