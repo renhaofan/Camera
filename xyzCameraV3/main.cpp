@@ -636,7 +636,7 @@ void renderSw0Scene() {
 	glLoadMatrixf(m);
 
 
-	camera.PrintInfo();
+	//camera.PrintInfo();
 
 	//float mat[16];  //按照列存储，所以按照行打出来
 	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
