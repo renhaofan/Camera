@@ -53,7 +53,7 @@ MyMesh t0;
 MyMesh t1;
 
 // compute frames per second
-// Note that this shouldn¡¯t be considered a true benchmark, just a guide value.
+// Note that this shouldnâ€™t be considered a true benchmark, just a guide value.
 int frame = 0;
 size_t current_time, time_stamp;
 char fps_chars[50];
@@ -73,8 +73,9 @@ bool show_axes = true;
 // width and height of the window
 int window_height = 800;
 int window_width = 1024;
-int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
-int screen_width = glutGet(GLUT_SCREEN_WIDTH);
+// freeglut  ERROR:  Function <glutGet> called without first calling 'glutInit'.
+// int screen_height = glutGet(GLUT_SCREEN_HEIGHT);
+// int screen_width = glutGet(GLUT_SCREEN_WIDTH);
 bool full_screen = false;
 
 GLCamera camera;
@@ -400,7 +401,7 @@ void plotCamera(float* position) {
 void myplotCone() {
 	// reference :https://www.cnblogs.com/MakeView660/p/10436685.html
 	glPushMatrix();
-	glBegin(GL_QUAD_STRIP);//Á¬ÐøÌî³äËÄ±ßÐÎ´®
+	glBegin(GL_QUAD_STRIP);//è¿žç»­å¡«å……å››è¾¹å½¢ä¸²
 	int i = 0;
 	for (i = 0; i <= 360; i += 15)
 	{
@@ -412,7 +413,7 @@ void myplotCone() {
 	glEnd();
 	//bottom circle
 	//glColor3f(0, 1, 1);
-	//glBegin(GL_TRIANGLE_FAN);           //ÉÈÐÎÁ¬ÐøÌî³äÈý½ÇÐÎ´®
+	//glBegin(GL_TRIANGLE_FAN);           //æ‰‡å½¢è¿žç»­å¡«å……ä¸‰è§’å½¢ä¸²
 	//glVertex3f(0.0f, 0.0f, 0.0f);
 	//for (i = 0; i <= 360; i += 15)
 	//{
@@ -544,7 +545,7 @@ void plotTest() {
 	//glLoadMatrixf(m);
 
 	
-	//float mat[16];  //°´ÕÕÁÐ´æ´¢£¬ËùÒÔ°´ÕÕÐÐ´ò³öÀ´
+	//float mat[16];  //æŒ‰ç…§åˆ—å­˜å‚¨ï¼Œæ‰€ä»¥æŒ‰ç…§è¡Œæ‰“å‡ºæ¥
 	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
 	//for (int index = 0; index < 4; index++) {
 	//	for (int i = 0; i < 4; ++i) {
@@ -575,14 +576,14 @@ void plotObject() {
 	plotCamera(camera.GetCameraE().data());
 	if (teapot_is_rotate_bool) teapot_rotate += 1.f;
 
-	//GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // ¶¨ÒåÑÕÉ«
-	//GLfloat light_pos[] = { 5,5,5,1 };  //¶¨Òå¹âÔ´Î»ÖÃ
-	//glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //ÉèÖÃµÚ0ºÅ¹âÔ´µÄ¹âÕÕÎ»ÖÃ
-	//glLightfv(GL_LIGHT0, GL_AMBIENT, white); //ÉèÖÃµÚ0ºÅ¹âÔ´¶à´Î·´ÉäºóµÄ¹âÕÕÑÕÉ«£¨»·¾³¹âÑÕÉ«£©
+	//GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 }; // å®šä¹‰é¢œè‰²
+	//GLfloat light_pos[] = { 5,5,5,1 };  //å®šä¹‰å…‰æºä½ç½®
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_pos); //è®¾ç½®ç¬¬0å·å…‰æºçš„å…‰ç…§ä½ç½®
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, white); //è®¾ç½®ç¬¬0å·å…‰æºå¤šæ¬¡åå°„åŽçš„å…‰ç…§é¢œè‰²ï¼ˆçŽ¯å¢ƒå…‰é¢œè‰²ï¼‰
 
 
-	//glEnable(GL_LIGHTING); //¿ªÆô¹âÕÕÄ£Ê½
-	//glEnable(GL_LIGHT0); //¿ªÆôµÚ0ºÅ¹âÔ´
+	//glEnable(GL_LIGHTING); //å¼€å¯å…‰ç…§æ¨¡å¼
+	//glEnable(GL_LIGHT0); //å¼€å¯ç¬¬0å·å…‰æº
 	//glPushMatrix();
 	//glTranslatef(10.f, 0.f, -10.f);
 	//plotTeaTable();
@@ -638,7 +639,7 @@ void renderSw0Scene() {
 
 	//camera.PrintInfo();
 
-	//float mat[16];  //°´ÕÕÁÐ´æ´¢£¬ËùÒÔ°´ÕÕÐÐ´ò³öÀ´
+	//float mat[16];  //æŒ‰ç…§åˆ—å­˜å‚¨ï¼Œæ‰€ä»¥æŒ‰ç…§è¡Œæ‰“å‡ºæ¥
 	//glGetFloatv(GL_MODELVIEW_MATRIX, mat);
 	//for (int index = 0; index < 4; index++) {
 	//	for (int i = 0; i < 4; ++i) {
@@ -1007,7 +1008,7 @@ void createPopupMenus() {
 //}
 
 void idle() {
-	glutPostRedisplay();//µ÷ÓÃµ±Ç°»æÖÆº¯Êý 
+	glutPostRedisplay();//è°ƒç”¨å½“å‰ç»˜åˆ¶å‡½æ•° 
 }
 
 void init() {
@@ -1025,7 +1026,7 @@ void init() {
 	// OpenGL init
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	// glClearColor(0.0, 0.0, 0.0, 1.0);//ÉèÖÃÇå³ýÑÕÉ«,ºÚÉ«±³¾°
+	// glClearColor(0.0, 0.0, 0.0, 1.0);//è®¾ç½®æ¸…é™¤é¢œè‰²,é»‘è‰²èƒŒæ™¯
 }
 
 
