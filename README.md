@@ -1,3 +1,7 @@
+# issue
+Have been tested in windows.However freeglut3 has bugs when full screen and resize windows in ubuntu.
+
+
 # GLUT_demo 
 This is a simple demo concerning OpenGL and GLUT to describe some attributes about them. 
 
