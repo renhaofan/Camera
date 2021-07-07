@@ -1,9 +1,7 @@
-# issue
-Have been tested in windows.However freeglut3 has bugs when full screen and resize windows in ubuntu.
+# Introduction
+resconstruct by glm,glfw3,glsl to replace Eigen, glut
 
-
-# GLUT_demo 
-This is a simple demo concerning OpenGL and GLUT to describe some attributes about them. 
+# glfw3 
 
 ![Demo](https://github.com/renhaofan/GLUT_demo/blob/main/xyzCameraV3/demo.png) 
 
