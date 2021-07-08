@@ -214,6 +214,71 @@ namespace viewer
         }
     }
 
+    void Viewer::Pitch(scalar _radians)
+    {
+        /*
+        $$\mathbf{R}_{x}(\alpha)=\left(\begin{array}{cccc}
+            1 & 0 & 0 & 0 \\
+            0 & \cos \alpha & -\sin \alpha & 0 \\
+            0 & \sin \alpha & \cos \alpha & 0 \\
+            0 & 0 & 0 & 1
+            \end{array}\right)
+        $$
+        */
+        /*
+            ------------->x
+
+        */
+        Mat4 rotation(1.0);
+        // [2][1] 1-st row, 2-st column
+        rotation[1][1] = rotation[2][2] = std::cos(_radians);
+        rotation[1][2] = std::sin(_radians);
+        rotation[2][1] = -rotation[1][2];
+        view_rotate_matrix = rotation * view_rotate_matrix;
+        ExtractUVWE();
+        ComposeViewMatrix();
+    }
+
+    void Viewer::Yaw(scalar _radians)
+    {
+        /*
+        $$\mathbf{R}_{y}(\alpha)=\left(\begin{array}{cccc}
+            \cos \alpha & 0 & \sin \alpha & 0 \\
+            0 & 1 & 0 & 0 \\
+            -\sin \alpha & 0 & \cos \alpha & 0 \\
+            0 & 0 & 0 & 1
+            \end{array}\right)
+        $$
+        */
+        Mat4 rotation(1.0);
+        rotation[0][0] = rotation[2][2] = std::cos(_radians);
+        rotation[2][0] = std::sin(_radians);
+        rotation[0][2] = -rotation[2][0];
+        view_rotate_matrix = rotation * view_rotate_matrix;
+        ExtractUVWE();
+        ComposeViewMatrix();
+    }
+
+    void Viewer::Roll(scalar _radians)
+    {
+        /*
+        $$\mathbf{R}_{z}(\alpha)=\left(\begin{array}{cccc}
+            \cos \alpha & -\sin \alpha & 0 & 0 \\
+            \sin \alpha & \cos \alpha & 0 & 0 \\
+            0 & 0 & 1 & 0 \\
+            0 & 0 & 0 & 1
+            \end{array}\right)
+        $$
+        */
+        Mat4 rotation(1.0);
+        rotation[0][0] = rotation[1][1] = std::cos(_radians);
+        rotation[0][1] = std::sin(_radians);
+        rotation[1][0] = -rotation[0][1];
+        view_rotate_matrix = rotation * view_rotate_matrix;
+        ExtractUVWE();
+        ComposeViewMatrix();
+    }
+
 
 
 

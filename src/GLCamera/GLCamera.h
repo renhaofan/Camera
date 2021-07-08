@@ -17,6 +17,7 @@ Note: gazing direction is -w, not w, u is up-direction
 
 #include <iostream>
 #include <limits>
+#include <cmath>
 
 #include "../Geometry/Geometry.h"
 
@@ -90,10 +91,10 @@ namespace viewer
         void ShiftForward(scalar delta_forward, scalar speed = 1.0);
         void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
 
-        // radians by default
+        // angle in radians by default
         void Pitch(scalar _radians); // around u
         void Yaw(scalar _radians);  // aroud v
-        void Roll(scalar _radians);
+        void Roll(scalar _radians); // aroud w
 
     private:
 
