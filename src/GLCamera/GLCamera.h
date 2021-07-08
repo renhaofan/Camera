@@ -36,6 +36,14 @@ namespace viewer
 
         void PrintInfo();
         void PrintMat4(const Mat4& m);
+        bool IsRotationMatrix(const Mat3& m);
+        bool IsRotationMatrix(const Mat4& m)
+        {
+            // explict convert Mat4 to Mat3
+            return IsRotationMatrix(m);
+        }
+
+
 
         // setters
         void SetViewTranslateMatrix(const Vec3& _v);
@@ -59,12 +67,7 @@ namespace viewer
         // compose view matrix with translation and roataion matrix
         void UpdateViewMatrix();
 
-        void LookAt(const Vec3& _pos, const Vec3& _tar);
         void LookAt(const Vec3& _pos, const Vec3& _tar, const Vec3& upDir);
-        void LookAt(scalar _px, scalar _py, scalar _pz, scalar _tx, scalar _ty, scalar _tz)
-        {
-            SetCamera(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz));
-        }
         void LookAt(scalar _px, scalar _py, scalar _pz, scalar _tx, scalar _ty, scalar _tz, scalar _ux, scalar _uy, scalar _uz)
         {
             SetCamera(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz), Vec3(ux, _uy, _uz));

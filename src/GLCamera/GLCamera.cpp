@@ -42,6 +42,16 @@ namespace viewer
         std::cout << m[0][3] << " " << m[1][3] << " " << m[2][3] << " " << m[3][3] << "\n";
     }
 
+    bool Viewer::IsRotationMatrix(const Mat3 &m)
+    {
+        bool isRotation = false;
+        if (determinant(m) - 1.0 < 1e-6)
+        {
+            isRotation = true;
+        }
+        return isRotation;
+    }
+
     void Viewer::SetViewTranslateMatrix(const Vec3 &_v)
     {
 //        view_translate_matrix[3][0] = _v.x;
@@ -59,6 +69,7 @@ namespace viewer
 
     void Viewer::SetViewRotateMatrix(const Mat4 &_m)
     {
+        assert(IsRotationMatrix(_m));
         view_rotate_matrix = _m;
         UpdateViewMatrix();
     }
@@ -71,17 +82,20 @@ namespace viewer
         view_rotate_matrix[0] = Vec4(tmp_u.x, tmp_v.x, tmp_w.x, 0.0);
         view_rotate_matrix[1] = Vec4(tmp_u.y, tmp_v.y, tmp_w.y, 0.0);
         view_rotate_matrix[2] = Vec4(tmp_u.z, tmp_v.z, tmp_w.z, 0.0);
+        assert(IsRotationMatrix(view_rotate_matrix));
         UpdateViewMatrix();
     }
 
     void Viewer::SetViewMatrix(const Mat4 &_m)
     {
+        assert(IsRotationMatrix(_m));
         Mat3 tmp_rotate = _m; // implicit convert Mat4 to Mat3
         view_rotate_matrix = tmp_rotate; // implicit convert Mat3 to Mat4
         view_translate_matrix[3] = transpose(view_rotate_matrix) * _m[3];
         UpdateViewMatrix();
     }
 
+    // compose view matrix from u, v, w, e
     void Viewer::SetViewMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w, const Vec3& _e)
     {
         u = _u; v= _v; w = _w; e = _e;
@@ -90,6 +104,7 @@ namespace viewer
         tmp_rotate[0] = Vec4(u.x, u.y, u.z, 0.0);
         tmp_rotate[1] = Vec4(v.x, v.y, v.z, 0.0);
         tmp_rotate[2] = Vec4(w.x, w.y, w.z, 0.0);
+        assert(IsRotationMatrix(tmp_rotate));
         view_rotate_matrix = transpose(tmp_rotate);
         view_matrix = view_rotate_matrix * view_translate_matrix;
     }
@@ -108,10 +123,12 @@ namespace viewer
           view_matrix = view_rotate_matrix * view_translate_matrix;
     }
 
-    void Viewer::LookAt(const Vec3 &_pos, const Vec3 &_tar)
+    void Viewer::LookAt(const Vec3 &_pos, const Vec3 &_tar, const Vec3 &_up)
     {
+        e = _pos;
 
     }
+
 
 
 
