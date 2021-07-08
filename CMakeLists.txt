@@ -2,8 +2,9 @@ cmake_minimum_required (VERSION 2.8)
 
 project (camera)
 set(APP_TARGET camera)
-# if you want a double-precision
-# set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DUSING_FLOAT64")
+
+#if you want a double-precision
+#set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DUSING_FLOAT64")
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build (Debug or Release)" FORCE)

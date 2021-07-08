@@ -17,12 +17,13 @@ Note: gazing direction is -w, not w, u is up-direction
 
 #include <iostream>
 #include <limits>
+
 #include "../Geometry/Geometry.h"
 
-
-namespace viewer {
+namespace viewer
+{
     // setup cout precision
-    typedef std::numeric_limits<float> dfl;
+    using namespace geometry;
 
     class Viewer
     {
@@ -34,50 +35,54 @@ namespace viewer {
         Viewer& operator=(const Viewer&);
 
         void PrintInfo();
+        void PrintMat4(const Mat4& m);
 
         // setters
-//        void SetViewTranslateMatrix(const Eigen::Vector3f& m);
-//        void SetViewTranslateMatrix(const Eigen::Matrix4f& m);
-//        void SetViewTranslateMatrix(float tx, float ty, float tz) {
-//            SetViewTranslateMatrix(Eigen::Vector3f(tx, ty, tz));
-//        }
+        void SetViewTranslateMatrix(const Vec3& _v);
+        void SetViewTranslateMatrix(const Mat4& _m);
+        void SetViewTranslateMatrix(scalar tx, scalar ty, scalar tz)
+        {
+            SetViewTranslateMatrix(Vec3(tx, ty, tz));
+        }
 
-//        void SetViewRotateMatrix(const Eigen::Matrix3f& m);
-//        void SetViewRotateMatrix(const Eigen::Matrix4f& m);
-//        void SetViewRotateMatrix(const Eigen::Vector3f& u, const Eigen::Vector3f& v, const Eigen::Vector3f& w);
+        void SetViewRotateMatrix(const Mat4& _m);
+        void SetViewRotateMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w);
+        void SetViewRotateMatrix(const Mat3& _m)
+        {
+            SetViewRotateMatrix(Mat4(_m));
+        }
 
-//        void SetViewMatrix(const Eigen::Matrix4f& m);
-//        void SetViewMatrix(const Eigen::Vector3f& u, const Eigen::Vector3f& v, const Eigen::Vector3f& w, const Eigen::Vector3f& e);
+        void SetViewMatrix(const Mat4& _m);
+        void SetViewMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w, const Vec3& _e);
 
+        //    extract uvwe     from translation and roataion matrix
+        // compose view matrix with translation and roataion matrix
+        void UpdateViewMatrix();
 
-
-//        void SetCamera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tar);
-//        void SetCamera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tar, const Eigen::Vector3f& upDir);
-//        void SetCamera(float px, float py, float pz, float tx, float ty, float tz) {
-//            SetCamera(Eigen::Vector3f(px, py, pz), Eigen::Vector3f(tx, ty, tz));
-//        }
-//        void SetCamera(float px, float py, float pz, float tx, float ty, float tz, float ux, float uy, float uz) {
-//            SetCamera(Eigen::Vector3f(px, py, pz), Eigen::Vector3f(tx, ty, tz), Eigen::Vector3f(ux, uy, uz));
-//        }
-//        // similar to gluLookAt()
-//        void LookAt(float px, float py, float pz, float tx, float ty, float tz, float ux, float uy, float uz) {
-//            SetCamera(px, py, pz, tx, ty, tz, ux, uy, uz);
-
-
+        void LookAt(const Vec3& _pos, const Vec3& _tar);
+        void LookAt(const Vec3& _pos, const Vec3& _tar, const Vec3& upDir);
+        void LookAt(scalar _px, scalar _py, scalar _pz, scalar _tx, scalar _ty, scalar _tz)
+        {
+            SetCamera(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz));
+        }
+        void LookAt(scalar _px, scalar _py, scalar _pz, scalar _tx, scalar _ty, scalar _tz, scalar _ux, scalar _uy, scalar _uz)
+        {
+            SetCamera(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz), Vec3(ux, _uy, _uz));
+        }
 
 
 
     private:
-        glm::vec3 u, v, w, e;
 
-        // row-major
-        glm::mat4* view_matrix;
-        glm::mat4* view_rotate_matrix;
-        glm::mat4* view_translate_matrix;
+        Vec3 u, v, w, e;
+        Mat4 view_matrix;
+        Mat4 view_rotate_matrix;
+        Mat4 view_translate_matrix;
 
-        glm::mat4* projection_matrix;
 
     };
+
+
 
 }
 
