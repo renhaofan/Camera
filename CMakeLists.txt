@@ -36,10 +36,14 @@ file(GLOB STBIMAGECPP
 
 
 
+#file(GLOB Apps_SRC
+#"src/Apps/*.cpp"
+#"src/Apps/*.h"
+#"src/Apps/*.hpp"
+#)
+
 file(GLOB Apps_SRC
-"src/Apps/*.cpp"
-"src/Apps/*.h"
-"src/Apps/*.hpp"
+"src/Apps/test.cpp"
 )
 
 file(GLOB GLCamera_SRC

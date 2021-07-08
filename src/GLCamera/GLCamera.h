@@ -36,16 +36,16 @@ namespace viewer
 
         void PrintInfo();
         void PrintMat4(const Mat4& m);
+        /*
+         *  NOTES:  Mat4 can be passed in, beacuse of implicit type convertion
+         *  Only judeg Mat.block<3, 3>(0, 0) whether is rotaion matrix
+         *  Needed to add more constraint
+        */
         bool IsRotationMatrix(const Mat3& m);
-        bool IsRotationMatrix(const Mat4& m)
-        {
-            // explict convert Mat4 to Mat3
-            return IsRotationMatrix(m);
-        }
-
 
 
         // setters
+        // assign values directly without any transformation
         void SetViewTranslateMatrix(const Vec3& _v);
         void SetViewTranslateMatrix(const Mat4& _m);
         void SetViewTranslateMatrix(scalar tx, scalar ty, scalar tz)
@@ -65,15 +65,27 @@ namespace viewer
 
         //    extract uvwe     from translation and roataion matrix
         // compose view matrix with translation and roataion matrix
+    private:
         void UpdateViewMatrix();
 
+    public:
         void LookAt(const Vec3& _pos, const Vec3& _tar, const Vec3& upDir);
         void LookAt(scalar _px, scalar _py, scalar _pz, scalar _tx, scalar _ty, scalar _tz, scalar _ux, scalar _uy, scalar _uz)
         {
-            SetCamera(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz), Vec3(ux, _uy, _uz));
+            LookAt(Vec3(_px, _py, _pz), Vec3(_tx, _ty, _tz), Vec3(_ux, _uy, _uz));
         }
 
+        // getter
+        Mat4 GetViewMatirx() const { return view_matrix; }
+        Vec3 GetPosition() const { return e; }
 
+        // delta > 0, shift direction---camera coordinates: right(u), up(v), backward(w);
+        void ShiftLeft(scalar delta_left, scalar speed = 1.0);
+        void ShiftRight(scalar delta_right, scalar speed = 1.0);
+        void ShiftUp(scalar delta_up, scalar speed = 1.0);
+        void ShiftDown(scalar delta_down, scalar speed = 1.0);
+        void ShiftForward(scalar delta_forward, scalar speed = 1.0);
+        void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
 
     private:
 

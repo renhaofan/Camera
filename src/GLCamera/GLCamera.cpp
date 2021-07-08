@@ -20,6 +20,11 @@ namespace viewer
         //        zFar = 100.0;
     }
 
+    Viewer::~Viewer()
+    {
+
+    }
+
     void Viewer::PrintInfo()
     {
         // make sure conversion of a floating-point value to text and back is exact using max_digits10
@@ -125,9 +130,89 @@ namespace viewer
 
     void Viewer::LookAt(const Vec3 &_pos, const Vec3 &_tar, const Vec3 &_up)
     {
-        e = _pos;
-
+        Vec3 tmp_u, tmp_v, tmp_w;
+        tmp_w = normalize(_tar - _pos);
+        tmp_v = normalize(_up);
+        tmp_u = cross(tmp_w, tmp_v);
+        tmp_v = cross(tmp_u, tmp_w);
+        tmp_w = -tmp_w;
+        SetViewMatrix(tmp_u, tmp_v, tmp_w, _pos);
     }
+
+    void Viewer::ShiftLeft(scalar delta_left, scalar speed)
+    {
+        if (delta_left <= 0)
+        {
+            ShiftRight(-delta_left, speed);
+        } else
+        {
+            SetViewTranslateMatrix(delta_left * speed * u - e);
+        }
+    }
+
+    void Viewer::ShiftRight(scalar delta_right, scalar speed)
+    {
+        if (delta_right <= 0)
+        {
+            ShiftRight(-delta_right, speed);
+        } else
+        {
+            SetViewTranslateMatrix(-delta_right * speed * u - e);
+        }
+    }
+
+    void Viewer::ShiftUp(scalar delta_up, scalar speed)
+    {
+        if (delta_up <= 0)
+        {
+            ShiftRight(-delta_up, speed);
+        } else
+        {
+            SetViewTranslateMatrix(-delta_up * speed * v - e);
+        }
+    }
+
+    void Viewer::ShiftDown(scalar delta_down, scalar speed)
+    {
+        if (delta_down <= 0)
+        {
+            ShiftRight(-delta_down, speed);
+        } else
+        {
+            SetViewTranslateMatrix(delta_down * speed * v - e);
+        }
+    }
+
+    void Viewer::ShiftForward(scalar delta_forward, scalar speed)
+    {
+        if (delta_forward <= 0)
+        {
+            ShiftRight(-delta_forward, speed);
+        } else
+        {
+            SetViewTranslateMatrix(delta_forward * speed * w - e);
+        }
+    }
+
+    void Viewer::ShiftBackward(scalar delta_backward, scalar speed)
+    {
+        if (delta_backward <= 0)
+        {
+            ShiftRight(-delta_backward, speed);
+        } else
+        {
+            SetViewTranslateMatrix(-delta_backward * speed * w - e);
+        }
+    }
+
+
+
+
+
+
+
+
+
 
 
 
