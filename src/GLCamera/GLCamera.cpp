@@ -13,11 +13,11 @@ namespace viewer
         view_rotate_matrix = Mat4(1.0);
         view_translate_matrix = Mat4(1.0);
 
-//        projection_matrix = mmat4(1.0);
-//        eye_fov = 45.0;
-////        aspect_ratio =
-//        zNear = 0.1;
-        //        zFar = 100.0;
+        proType = ORTHOGRAPHIC;
+        fovy = 45.0; aspect = 1.3; // approximate 800/600=640/480
+        z_near = 0.1; z_far = 100.0;
+        x_left = y_bottom = -100.0; x_right = y_top = 100.0;
+
     }
 
     Viewer::~Viewer()
@@ -25,7 +25,7 @@ namespace viewer
 
     }
 
-    void Viewer::PrintInfo()
+    void Viewer::PrintViewInfo()
     {
         // make sure conversion of a floating-point value to text and back is exact using max_digits10
         std::cout.precision(dfl::max_digits10);
@@ -56,6 +56,8 @@ namespace viewer
         }
         return isRotation;
     }
+
+
 
     void Viewer::SetViewTranslateMatrix(const Vec3 &_v)
     {
@@ -225,10 +227,6 @@ namespace viewer
             \end{array}\right)
         $$
         */
-        /*
-            ------------->x
-
-        */
         Mat4 rotation(1.0);
         // [2][1] 1-st row, 2-st column
         rotation[1][1] = rotation[2][2] = std::cos(_radians);
@@ -277,6 +275,47 @@ namespace viewer
         view_rotate_matrix = rotation * view_rotate_matrix;
         ExtractUVWE();
         ComposeViewMatrix();
+    }
+
+    bool Viewer::IsValidProjection()
+    {
+        bool ret = false;
+        if (z_near > 0 || z_far > 0)
+        {
+            ret = true;
+        }
+
+        return ret;
+    }
+
+    void Viewer::Orthographic(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far)
+    {
+        // this implementation has 1e-6 precision in last column elements
+        // compare with glm::ortho because of matirx multiplation
+        // the better implementation is to construct one matrix with symbol solution
+        proType = ORTHOGRAPHIC;
+
+        z_near = -_near; z_far = -_far;
+        assert(IsValidProjection());
+        x_left = _left; x_right = _right; y_top = _top; y_bottom = _bottom;
+
+        Mat4 trans(1.0);
+        trans[3] = Vec4(-(x_left + x_right) / 2.0, -(y_top + y_bottom) / 2.0, \
+                        -(z_near + z_far) / 2.0, 1.0);
+
+        Mat4 scl(1.0);
+        scl[0][0] = 2.0 / (x_right - x_left);
+        scl[1][1] = 2.0 / (y_top - y_bottom);
+        // result in NDC space is left-hand, beacause z is negative
+        // as shown in http://www.songho.ca/opengl/files/gl_projectionmatrix01.png
+        scl[2][2] = 2.0 / (z_far - z_near);
+
+        projection_matrix = scl * trans;
+    }
+
+    void Viewer::Perspective(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far)
+    {
+
     }
 
 

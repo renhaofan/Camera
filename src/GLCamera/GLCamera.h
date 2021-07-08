@@ -35,7 +35,7 @@ namespace viewer
         Viewer(const Viewer&);
         Viewer& operator=(const Viewer&);
 
-        void PrintInfo();
+        void PrintViewInfo();
         void PrintMat4(const Mat4& m);
         /*
          *  NOTES:  Mat4 can be passed in, beacuse of implicit type convertion
@@ -44,6 +44,14 @@ namespace viewer
         */
         bool IsRotationMatrix(const Mat3& m);
 
+
+
+
+        /**********************************************************************
+         * setup viewmatrix
+         * translation function u,v,w
+         * rotation function u,v,w
+        ***********************************************************************/
 
         // setters
         // assign values directly without any transformation
@@ -91,10 +99,34 @@ namespace viewer
         void ShiftForward(scalar delta_forward, scalar speed = 1.0);
         void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
 
-        // angle in radians by default
+        // angle(delta value) in radians by default,
         void Pitch(scalar _radians); // around u
         void Yaw(scalar _radians);  // aroud v
         void Roll(scalar _radians); // aroud w
+
+        /**********************************************************************
+         *              setup projection matrix
+         *
+         *
+        ***********************************************************************/
+
+        enum PType
+        {
+            ORTHOGRAPHIC,
+            PERSPECTIVE
+        };
+
+        // check whether fovy, aspect, zNear, zFar xLeft, xRight ...is valid value;
+        bool IsValidProjection();
+
+        // projection
+        // args near, far must > 0, z_near, z_far must < 0
+        void Orthographic(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far);
+
+        void Perspective(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far);
+        void Perspective(scalar _fovy, scalar _aspect, scalar _zNear, scalar _zFar);
+
+        Mat4 GetProjectionMatrix() { return projection_matrix; }
 
     private:
 
@@ -103,7 +135,11 @@ namespace viewer
         Mat4 view_rotate_matrix;
         Mat4 view_translate_matrix;
 
-
+        //aspect SCR_WIDTH / (float)SCR_HEIGHT
+        PType proType;
+        scalar fovy, aspect, z_near, z_far;
+        scalar x_left, x_right, y_top, y_bottom;
+        Mat4 projection_matrix;
     };
 
 
