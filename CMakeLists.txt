@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 
 project (camera)
 set(APP_TARGET camera)
+set(APP_Test_TARGET camera_test)
 
 #if you want a double-precision
 #set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DUSING_FLOAT64")
@@ -36,13 +37,11 @@ file(GLOB STBIMAGECPP
 
 
 
-#file(GLOB Apps_SRC
-#"src/Apps/*.cpp"
-#"src/Apps/*.h"
-#"src/Apps/*.hpp"
-#)
-
 file(GLOB Apps_SRC
+"src/Apps/main.cpp"
+)
+
+file(GLOB Apps_Test_SRC
 "src/Apps/test.cpp"
 )
 
@@ -73,6 +72,17 @@ list(APPEND SOURCES
     ${STBIMAGECPP}
     )
 
+list(APPEND SOURCES_Test
+    ${GLCamera_SRC}
+    ${Geometry_SRC}
+    ${Tools_SRC}
+    ${Apps_Test_SRC}
+    ${GLADC}
+    ${STBIMAGECPP}
+    )
+
+
+
 
 ########################################
 # find the required packages
@@ -99,3 +109,9 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 ########################################
 add_executable(${APP_TARGET} ${SOURCES})
 target_link_libraries(${APP_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+
+
+
+
+add_executable(${APP_Test_TARGET} ${SOURCES_Test})
+target_link_libraries(${APP_Test_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})

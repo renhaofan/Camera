@@ -1,9 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 
 #include "../Tools/shader_m.h"
 
@@ -12,7 +12,8 @@
 #include <iostream>
 
 #include "../GLCamera/GLCamera.h"
-
+//using namespace viewer;
+//using namespace viewer::geometry;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -38,7 +39,9 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
-float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+//float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+
+float yaw   = 0.0f;
 float pitch =  0.0f;
 float lastX =  800.0f / 2.0;
 float lastY =  600.0 / 2.0;
@@ -46,6 +49,7 @@ float fov   =  45.0f;
 
 int main()
 {
+
     std::string texture1_path = "../Camera/assets/container.jpg";
     std::string texture2_path = "../Camera/assets/awesomeface.png";
     std::string vshader_path = "../Camera/src/Shaders/vertex.vs";
@@ -76,10 +80,10 @@ int main()
         glfwMakeContextCurrent(window);
         glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-//        glfwSetCursorPosCallback(window, mouse_callback);
+        glfwSetCursorPosCallback(window, mouse_callback);
 //        glfwSetScrollCallback(window, scroll_callback);
 //        // tell GLFW to capture our mouse and hide cursor
-//        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
         // glad: load all OpenGL function pointers
@@ -366,7 +370,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
 
@@ -374,8 +378,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
-    yaw += xoffset;
-    pitch += yoffset;
+//    yaw += xoffset;
+//    pitch += yoffset;
+
+    yaw = xoffset;
+    pitch = yoffset;
+
 
     // make sure that when pitch is out of bounds, screen doesn't get flipped
     if (pitch > 89.0f)
@@ -383,11 +391,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (pitch < -89.0f)
         pitch = -89.0f;
 
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
+//    glm::vec3 front;
+//    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+//    front.y = sin(glm::radians(pitch));
+//    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+//    cameraFront = glm::normalize(front);
+
+    camera.Pitch(glm::radians(pitch));
+    camera.Yaw(glm::radians(yaw));
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
