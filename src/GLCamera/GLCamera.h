@@ -63,10 +63,13 @@ namespace viewer
         void SetViewMatrix(const Mat4& _m);
         void SetViewMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w, const Vec3& _e);
 
-        //    extract uvwe     from translation and roataion matrix
-        // compose view matrix with translation and roataion matrix
+
+
     private:
-        void UpdateViewMatrix();
+        //    extract uvwe     from translation and roataion matrix
+        void ExtractUVWE();
+        // compose view matrix with translation and roataion matrix
+        void ComposeViewMatrix();
 
     public:
         void LookAt(const Vec3& _pos, const Vec3& _tar, const Vec3& upDir);
@@ -86,6 +89,11 @@ namespace viewer
         void ShiftDown(scalar delta_down, scalar speed = 1.0);
         void ShiftForward(scalar delta_forward, scalar speed = 1.0);
         void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
+
+        // radians by default
+        void Pitch(scalar _radians); // around u
+        void Yaw(scalar _radians);  // aroud v
+        void Roll(scalar _radians);
 
     private:
 

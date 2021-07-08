@@ -63,20 +63,26 @@ namespace viewer
 //        view_translate_matrix[3][1] = _v.y;
 //        view_translate_matrix[3][2] = _v.z;
         view_translate_matrix[3] = Vec4(_v.x, _v.y, _v.z, 1.0);
-        UpdateViewMatrix();
+
+        ExtractUVWE();
+        ComposeViewMatrix();
     }
 
     void Viewer::SetViewTranslateMatrix(const Mat4 &_m)
     {
         view_translate_matrix = _m;
-        UpdateViewMatrix();
+
+        ExtractUVWE();
+        ComposeViewMatrix();
     }
 
     void Viewer::SetViewRotateMatrix(const Mat4 &_m)
     {
         assert(IsRotationMatrix(_m));
         view_rotate_matrix = _m;
-        UpdateViewMatrix();
+
+        ExtractUVWE();
+        ComposeViewMatrix();
     }
 
     void Viewer::SetViewRotateMatrix(const Vec3 &_u, const Vec3 &_v, const Vec3 &_w)
@@ -88,7 +94,9 @@ namespace viewer
         view_rotate_matrix[1] = Vec4(tmp_u.y, tmp_v.y, tmp_w.y, 0.0);
         view_rotate_matrix[2] = Vec4(tmp_u.z, tmp_v.z, tmp_w.z, 0.0);
         assert(IsRotationMatrix(view_rotate_matrix));
-        UpdateViewMatrix();
+
+        ExtractUVWE();
+        ComposeViewMatrix();
     }
 
     void Viewer::SetViewMatrix(const Mat4 &_m)
@@ -97,7 +105,9 @@ namespace viewer
         Mat3 tmp_rotate = _m; // implicit convert Mat4 to Mat3
         view_rotate_matrix = tmp_rotate; // implicit convert Mat3 to Mat4
         view_translate_matrix[3] = transpose(view_rotate_matrix) * _m[3];
-        UpdateViewMatrix();
+
+        ExtractUVWE();
+        ComposeViewMatrix();
     }
 
     // compose view matrix from u, v, w, e
@@ -111,21 +121,20 @@ namespace viewer
         tmp_rotate[2] = Vec4(w.x, w.y, w.z, 0.0);
         assert(IsRotationMatrix(tmp_rotate));
         view_rotate_matrix = transpose(tmp_rotate);
-        view_matrix = view_rotate_matrix * view_translate_matrix;
+        ComposeViewMatrix();
     }
 
-
-    void Viewer::UpdateViewMatrix()
+    void Viewer::ExtractUVWE()
     {
-//        e = Vec3(view_translate_matrix[3][0], view_translate_matrix[3][0], view_translate_matrix[3][0]);
-//        u = Vec3(view_translate_matrix[0][0], view_translate_matrix[1][0], view_translate_matrix[2][0]);
-//        v = Vec3(view_translate_matrix[0][1], view_translate_matrix[1][1], view_translate_matrix[2][1]);
-//        w = Vec3(view_translate_matrix[0][2], view_translate_matrix[1][2], view_translate_matrix[2][2]);
-          u.x = view_rotate_matrix[0][0]; u.y = view_rotate_matrix[1][0]; u.z = view_rotate_matrix[2][0];
-          v.x = view_rotate_matrix[0][1]; v.y = view_rotate_matrix[1][1]; v.z = view_rotate_matrix[2][1];
-          w.x = view_rotate_matrix[0][2]; w.y = view_rotate_matrix[1][2]; w.z = view_rotate_matrix[2][2];
-          e.x = -view_translate_matrix[3][0]; e.y = -view_translate_matrix[3][1]; e.z = -view_translate_matrix[3][2];
-          view_matrix = view_rotate_matrix * view_translate_matrix;
+        u.x = view_rotate_matrix[0][0]; u.y = view_rotate_matrix[1][0]; u.z = view_rotate_matrix[2][0];
+        v.x = view_rotate_matrix[0][1]; v.y = view_rotate_matrix[1][1]; v.z = view_rotate_matrix[2][1];
+        w.x = view_rotate_matrix[0][2]; w.y = view_rotate_matrix[1][2]; w.z = view_rotate_matrix[2][2];
+        e.x = -view_translate_matrix[3][0]; e.y = -view_translate_matrix[3][1]; e.z = -view_translate_matrix[3][2];
+    }
+
+    void Viewer::ComposeViewMatrix()
+    {
+        view_matrix = view_rotate_matrix * view_translate_matrix;
     }
 
     void Viewer::LookAt(const Vec3 &_pos, const Vec3 &_tar, const Vec3 &_up)
