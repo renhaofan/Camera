@@ -35,14 +35,8 @@ namespace viewer
         Viewer(const Viewer&);
         Viewer& operator=(const Viewer&);
 
-        void PrintViewInfo();
         void PrintMat4(const Mat4& m);
-        /*
-         *  NOTES:  Mat4 can be passed in, beacuse of implicit type convertion
-         *  Only judeg Mat.block<3, 3>(0, 0) whether is rotaion matrix
-         *  Needed to add more constraint
-        */
-        bool IsRotationMatrix(const Mat3& m);
+
 
 
 
@@ -52,6 +46,14 @@ namespace viewer
          * translation function u,v,w
          * rotation function u,v,w
         ***********************************************************************/
+
+        /*
+         *  NOTES:  Mat4 can be passed in, beacuse of implicit type convertion
+         *  Only judeg Mat.block<3, 3>(0, 0) whether is rotaion matrix
+         *  Needed to add more constraint
+        */
+        bool IsRotationMatrix(const Mat3& m);
+        void PrintViewInfo();
 
         // setters
         // assign values directly without any transformation
@@ -106,7 +108,7 @@ namespace viewer
 
         /**********************************************************************
          *              setup projection matrix
-         *
+         *      Both z_near and z_far are negative
          *
         ***********************************************************************/
 
@@ -117,14 +119,21 @@ namespace viewer
         };
 
         // check whether fovy, aspect, zNear, zFar xLeft, xRight ...is valid value;
-        bool IsValidProjection();
+        bool IsPositiveBoth(scalar _z_near, scalar _z_far);
+        bool IsValidFovyRatio(scalar _fovy, scalar _ratio);
 
+        void PrintProjectionMatrix();
         // projection
-        // args near, far must > 0, z_near, z_far must < 0
+        // args near, far > 0, so that member variable z_near, z_far  < 0
         void Orthographic(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far);
 
-        void Perspective(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far);
+        void frustum(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far);
         void Perspective(scalar _fovy, scalar _aspect, scalar _zNear, scalar _zFar);
+
+        void Perspective(scalar _fovy, scalar _width, scalar _height, scalar _zNear, scalar _zFar)
+        {
+            Perspective(_fovy, _width/_height, _zNear, _zFar);
+        }
 
         Mat4 GetProjectionMatrix() { return projection_matrix; }
 

@@ -277,10 +277,10 @@ namespace viewer
         ComposeViewMatrix();
     }
 
-    bool Viewer::IsValidProjection()
+    bool Viewer::IsPositiveBoth(scalar _z_near, scalar _z_far)
     {
         bool ret = false;
-        if (z_near > 0 || z_far > 0)
+        if (_z_near > 0 && _z_far > 0)
         {
             ret = true;
         }
@@ -288,15 +288,125 @@ namespace viewer
         return ret;
     }
 
+    bool Viewer::IsValidFovyRatio(scalar _fovy, scalar _ratio)
+    {
+        bool ret = false;
+        if (_ratio > 0 && _fovy > 0 && _fovy < 90)
+        {
+            ret = true;
+        }
+
+        return ret;
+    }
+
+    void Viewer::PrintProjectionMatrix()
+    {
+        std::cout << "Projection: \n";
+        PrintMat4(projection_matrix);
+    }
+
     void Viewer::Orthographic(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far)
     {
-        // this implementation has 1e-6 precision in last column elements
-        // compare with glm::ortho because of matirx multiplation
-        // the better implementation is to construct one matrix with symbol solution
+        /*
+         this marching implementation has 1e-6 precision in last column elements
+         compare with glm::ortho because of matirx multiplation
+         the better implementation is to construct one matrix with symbol solution
+
+         new: after assign values with symbol solution. nothing changed.
+         still have little difference less than 1e-8, and totally same with marching approach
+         strange!!
+           here's a test example
+            glm::mat4 projection = glm::ortho(-84.431, 100.43414,-4311.15, -0.43, -3.342, 512.41152);
+            PrintMat4(projection);
+            PrintMat4(myortho(-84.431, 100.43414,-4311.15, -0.43, -3.342, 512.41152));
+            PrintMat4(myortho_marching(-84.431, 100.43414,-4311.15, -0.43, -3.342, 512.41152));
+         */
+        /*
+                glm::mat4 myortho_marching(float _left, float _right, float _bottom, float _top, float _near, float _far)
+                {
+                    float z_near, z_far, x_left, x_right,y_top, y_bottom;
+                    z_near = -_near; z_far = -_far;
+
+                    x_left = _left; x_right = _right; y_top = _top; y_bottom = _bottom;
+
+                    glm::mat4 trans(1.0);
+                    trans[3] = glm::vec4(-(x_left + x_right) / 2.0, -(y_top + y_bottom) / 2.0, \
+                                    -(z_near + z_far) / 2.0, 1.0);
+
+                    glm::mat4 scl(1.0);
+                    scl[0][0] = 2.0 / (x_right - x_left);
+                    scl[1][1] = 2.0 / (y_top - y_bottom);
+                    // result in NDC space is left-hand, beacause z is negative
+                    // as shown in http://www.songho.ca/opengl/files/gl_projectionmatrix01.png
+                    scl[2][2] = 2.0 / (z_far - z_near);
+
+                    glm::mat4 projection_matrix = scl * trans;
+                    return projection_matrix;
+                }
+
+                glm::mat4 myortho(float _left, float _right, float _bottom, float _top, float _near, float _far)
+                {
+                    float z_near, z_far, x_left, x_right,y_top, y_bottom;
+                    z_near = -_near; z_far = -_far;
+
+                    x_left = _left; x_right = _right; y_top = _top; y_bottom = _bottom;
+
+                    glm::mat4 trans(1.0);
+                    trans[3] = glm::vec4(-(x_left + x_right) / 2.0, -(y_top + y_bottom) / 2.0, \
+                                    -(z_near + z_far) / 2.0, 1.0);
+
+
+                    glm::mat4 projection_matrix(1.0);
+                    float tmp_x = x_right - x_left;
+                    float tmp_y = y_top - y_bottom;
+                    float tmp_z = z_far - z_near;
+
+                    projection_matrix[0][0] = 2.0 / tmp_x;
+                    projection_matrix[1][1] = 2.0 / tmp_y;
+                    // result in NDC space is left-hand, beacause z is negative
+                    // as shown in http://www.songho.ca/opengl/files/gl_projectionmatrix01.png
+                    projection_matrix[2][2] = 2.0 / tmp_z;
+                    projection_matrix[3] = glm::vec4(-(x_left + x_right) / tmp_x, -(y_top + y_bottom) / tmp_y, \
+                                                     -(z_near + z_far) / tmp_z, 1.0);
+
+
+
+                    return projection_matrix;
+                }
+
+         */
+
+        /*
+         * latex online render: https://www.codecogs.com/latex/eqneditor.php
+        * translation =
+            \begin{pmatrix}
+            1 & 0 & 0 & -\frac{l+r}{2} \\
+            0 & 1 & 0 & -\frac{b+t}{2}\\
+            0 & 0 & 1 & -\frac{n+f}{2}\\
+            0 & 0 & 0 & 1
+            \end{pmatrix}
+         * scale =
+            \begin{pmatrix}
+            \frac{2}{r-l} & 0 & 0 & 0 \\
+            0 & \frac{2}{t-b} & 0 & 0\\
+            0 & 0 & \frac{2}{f-n} & 0\\
+            0 & 0 & 0 & 1
+            \end{pmatrix}
+         * ortho_projection_matrix = scale * translation =
+            \begin{pmatrix}
+            \frac{2}{r-l} & 0 & 0 & \frac{l+r}{l-r} \\
+            0 & \frac{2}{t-b} & 0 & \frac{b+t}{b-t}\\
+            0 & 0 & \frac{2}{f-n} & \frac{n+f}{n-f}\\
+            0 & 0 & 0 & 1
+            \end{pmatrix}
+        */
+
+
+
+        assert(IsPositiveBoth(_near, _far));
         proType = ORTHOGRAPHIC;
 
         z_near = -_near; z_far = -_far;
-        assert(IsValidProjection());
         x_left = _left; x_right = _right; y_top = _top; y_bottom = _bottom;
 
         Mat4 trans(1.0);
@@ -313,10 +423,137 @@ namespace viewer
         projection_matrix = scl * trans;
     }
 
-    void Viewer::Perspective(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far)
+    void Viewer::frustum(scalar _left, scalar _right, scalar _bottom, scalar _top, scalar _near, scalar _far)
     {
+        /* latex online render: https://www.codecogs.com/latex/eqneditor.php
+         * first "squeeze" frustum volume into suqare volume
+         * then then apply orthographic projection
+         * suqeeze =
+            \begin{pmatrix}
+            n & 0 & 0 & 0 \\
+            0 & n & 0 & 0\\
+            0 & 0 & n+f & -nf\\
+            0 & 0 & 1 & 0
+            \end{pmatrix}
+         * ortho =
+            \begin{pmatrix}
+            \frac{2}{r-l} & 0 & 0 & \frac{l+r}{l-r} \\
+            0 & \frac{2}{t-b} & 0 & \frac{b+t}{b-t}\\
+            0 & 0 & \frac{2}{f-n} & \frac{n+f}{n-f}\\
+            0 & 0 & 0 & 1
+            \end{pmatrix}
+         * ret = ortho * squeeze =
+            \begin{pmatrix}
+            \frac{2n}{r-l} & 0 & \frac{l+r}{l-r} & 0 \\
+            0 & \frac{2n}{t-b} & \frac{b+t}{b-t} & 0\\
+            0 & 0 & \frac{n+f}{f-n} & -\frac{2nf}{f-n}\\
+            0 & 0 & 1 & 0
+            \end{pmatrix}
+         * ret = -ret;
+         *   In our implementation,
+         *   z_znear, z_far are negative while fuction args _near and _far are positive.
+         *   Before transformaion, we make z values negative manualy.
+         *   our transformation only squeeze and ortho-pro.
+         *
+         *   In opengl implemetation,
+         *   Actually,  z values passing from function are
+         *   not forced into negative values firstly. Reversely, convert them to
+         *   negative values by projection matrix. That's why our projection transformation
+         *   is a little difference with [here](http://www.songho.ca/opengl/files/gl_projectionmatrix_eq16.png)
+         *
+         *   we need to pass it to opengl with consistence.
+         *   Therefore, we take opposite operation lastly
+         *
+        */
+        assert(IsPositiveBoth(_near, _far));
+        proType = PERSPECTIVE;
 
+        z_near = -_near; z_far = -_far;
+        x_left = _left; x_right = _right; y_top = _top; y_bottom = _bottom;
+
+        Mat4 persp2ortho(1.0);
+        persp2ortho[0][0] = persp2ortho[1][1] = z_near;
+        persp2ortho[2][2] = z_near + z_far; persp2ortho[3][3] = 0.0;
+        persp2ortho[2][3] = 1.0;
+        persp2ortho[3][2] = -z_near * z_far;
+
+        Mat4 ortho(1.0);
+        scalar tmp_x = x_right - x_left;
+        scalar tmp_y = y_top - y_bottom;
+        scalar tmp_z = z_far - z_near;
+        ortho[0][0] = 2.0 / tmp_x;
+        ortho[1][1] = 2.0 / tmp_y;
+        // result in NDC space is left-hand, beacause z is negative
+        // as shown in http://www.songho.ca/opengl/files/gl_projectionmatrix01.png
+        ortho[2][2] = 2.0 / tmp_z;
+        ortho[3] = Vec4(-(x_left + x_right) / tmp_x, -(y_top + y_bottom) / tmp_y, \
+                                         -(z_near + z_far) / tmp_z, 1.0);
+
+        projection_matrix = ortho * persp2ortho;
+        projection_matrix = -projection_matrix;
     }
+
+    void Viewer::Perspective(scalar _fovy, scalar _aspect, scalar _zNear, scalar _zFar)
+    {
+        /* latex online render: https://www.codecogs.com/latex/eqneditor.php
+         * first "squeeze" frustum volume into suqare volume
+         * then then apply orthographic projection
+         * ret =
+            \begin{pmatrix}
+            \frac{2n}{r-l} & 0 & \frac{l+r}{l-r} & 0 \\
+            0 & \frac{2n}{t-b} & \frac{b+t}{b-t} & 0\\
+            0 & 0 & \frac{n+f}{f-n} & -\frac{2nf}{f-n}\\
+            0 & 0 & 1 & 0
+            \end{pmatrix}
+         * l = -r, b = -t;
+         * aspect ration = \frac{r}{t}
+         * tan(\frac{aspect}{2}) = \frac{t}{abs(n)}
+         * ret =
+            \begin{pmatrix}
+            \frac{n}{r} & 0 & 0 & 0 \\
+            0 & \frac{n}{t} & 0 & 0\\
+            0 & 0 & \frac{n+f}{f-n} & -\frac{2nf}{f-n}\\
+            0 & 0 & 1 & 0
+            \end{pmatrix}
+         * ret = -ret;
+         *   In our implementation,
+         *   z_znear, z_far are negative while fuction args _near and _far are positive.
+         *   Before transformaion, we make z values negative manualy.
+         *   our transformation only squeeze and ortho-pro.
+         *
+         *   In opengl implemetation,
+         *   Actually,  z values passing from function are
+         *   not forced into negative values firstly. Reversely, convert them to
+         *   negative values by projection matrix. That's why our projection transformation
+         *   is a little difference with [here](http://www.songho.ca/opengl/files/gl_projectionmatrix_eq16.png)
+         *
+         *   we need to pass it to opengl with consistence.
+         *   Therefore, we take opposite operation lastly
+        */
+        assert(IsPositiveBoth(_zNear, _zFar));
+        assert(IsValidFovyRatio(_fovy, _aspect));
+        proType = PERSPECTIVE;
+
+        scalar tan_fovyh = std::tan(_fovy / 2.0);
+        aspect = _aspect;
+        z_near = -_zNear; z_far = -_zFar;
+        y_top =  std::abs(z_near) * tan_fovyh;  y_bottom = -y_top;
+        x_right = _aspect * tan_fovyh * std::abs(z_near);   x_left = -x_right;
+
+        // or directly call function
+        // frustum(x_left, x_right, y_bottom, y_top, -z_near, -z_far);
+        projection_matrix = Mat4(1.0);
+        scalar tmp = 1 / (z_far - z_near);
+        projection_matrix[0][0] = z_near / x_right;
+        projection_matrix[1][1] = z_near / y_top;
+        projection_matrix[2][2] = (z_near + z_far) * tmp;
+        projection_matrix[3][2] = -2.0 * z_near * z_far * tmp;
+        projection_matrix[3][3] = 0.0;
+        projection_matrix[2][3] = 1.0;
+
+        projection_matrix = -projection_matrix;
+    }
+
 
 
 
