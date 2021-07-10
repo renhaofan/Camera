@@ -19,10 +19,7 @@ namespace viewer
         Perspective(fovy, aspect, z_near, z_far);
     }
 
-    Viewer::~Viewer()
-    {
 
-    }
 
     void Viewer::PrintViewInfo()
     {

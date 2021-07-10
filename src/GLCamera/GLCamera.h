@@ -30,7 +30,7 @@ namespace viewer
     {
     public:
         Viewer();
-        ~Viewer();
+        ~Viewer() = default;
         // Suppress the default copy constructor and assignment operator
         Viewer(const Viewer&);
         Viewer& operator=(const Viewer&);
