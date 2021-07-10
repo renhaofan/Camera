@@ -5,7 +5,7 @@ Have been tested in windows.However freeglut3 has bugs when full screen and resi
 # GLUT_demo 
 This is a simple demo concerning OpenGL and GLUT to describe some attributes about them. 
 
-![Demo](https://github.com/renhaofan/GLUT_demo/blob/main/xyzCameraV3/demo.png) 
+![Demo](https://github.com/renhaofan/Image-hosting-service/blob/master/glut_camera.png)
 
 # KeyBoard Control
 ## Camera 
