@@ -13,11 +13,10 @@ namespace viewer
         view_rotate_matrix = Mat4(1.0);
         view_translate_matrix = Mat4(1.0);
 
-        proType = ORTHOGRAPHIC;
+        proType = PERSPECTIVE;
         fovy = 45.0; aspect = 1.3; // approximate 800/600=640/480
         z_near = 0.1; z_far = 100.0;
-        x_left = y_bottom = -100.0; x_right = y_top = 100.0;
-
+        Perspective(fovy, aspect, z_near, z_far);
     }
 
     Viewer::~Viewer()
