@@ -94,17 +94,17 @@ namespace viewer
         Vec3 GetPosition() const { return e; }
 
         // delta > 0, shift direction---camera coordinates: right(u), up(v), backward(w);
-        void ShiftLeft(scalar delta_left, scalar speed = 1.0);
-        void ShiftRight(scalar delta_right, scalar speed = 1.0);
-        void ShiftUp(scalar delta_up, scalar speed = 1.0);
-        void ShiftDown(scalar delta_down, scalar speed = 1.0);
-        void ShiftForward(scalar delta_forward, scalar speed = 1.0);
-        void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
+        void ShiftLeft(scalar delta_left, scalar sensitivity = 1.0);
+        void ShiftRight(scalar delta_right, scalar sensitivity = 1.0);
+        void ShiftUp(scalar delta_up, scalar sensitivity = 1.0);
+        void ShiftDown(scalar delta_down, scalar sensitivity = 1.0);
+        void ShiftForward(scalar delta_forward, scalar sensitivity = 1.0);
+        void ShiftBackward(scalar delta_backward, scalar sensitivity = 1.0);
 
         // angle(delta value) in radians by default,
-        void Pitch(scalar _radians); // around u
-        void Yaw(scalar _radians);  // aroud v
-        void Roll(scalar _radians); // aroud w
+        void Pitch(scalar _radians, scalar _sensitivity = 1.0); // around u
+        void Yaw(scalar _radians, scalar _sensitivity = 1.0);  // aroud v
+        void Roll(scalar _radians, scalar _sensitivity = 1.0); // aroud w
 
         /**********************************************************************
          *              setup projection matrix
