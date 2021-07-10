@@ -91,7 +91,7 @@ int main()
         glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
         glfwSetCursorPosCallback(window, mouse_callback);
-//        glfwSetScrollCallback(window, scroll_callback);
+        glfwSetScrollCallback(window, scroll_callback);
 //        // tell GLFW to capture our mouse and hide cursor
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -174,6 +174,7 @@ int main()
             glm::vec3( 1.5f,  0.2f, -1.5f),
             glm::vec3(-1.3f,  1.0f, -1.5f)
         };
+
 
 
         // set up VBO, VAO and concerned attributes
