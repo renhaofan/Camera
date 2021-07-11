@@ -9,9 +9,7 @@ namespace viewer
         v = Vec3(0.0, 1.0, 0.0);
         w = Vec3(0.0, 0.0, 1.0);
         e = Vec3(0.0, 0.0, -10.0);
-        view_matrix = Mat4(1.0);
-        view_rotate_matrix = Mat4(1.0);
-        view_translate_matrix = Mat4(1.0);
+        SetViewMatrix(u, v, w, e);
 
         proType = PERSPECTIVE;
         fovy = 45.0; aspect = 1.3; // approximate 800/600=640/480

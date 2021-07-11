@@ -74,7 +74,14 @@ namespace viewer
         void SetViewMatrix(const Mat4& _m);
         void SetViewMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w, const Vec3& _e);
 
-
+        void setViewPosition(const Vec3& _e)
+        {
+            SetViewTranslateMatrix(-_e);
+        }
+        void setViewPosition(scalar _x, scalar _y, scalar _z)
+        {
+            SetViewTranslateMatrix(Vec3(_x, _y, _z));
+        }
 
     private:
         //    extract uvwe     from translation and roataion matrix
