@@ -1,11 +1,25 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 
 #include "../Tools/shader_m.h"
+
+
+//#ifdef __APPLE__
+//#include <OpenGL/gl.h>
+//#include <OpenGL/glu.h>
+////#include <GLUT/glut.h>
+//#else
+//#ifdef _WIN32
+//#include <windows.h>
+//#endif
+//#include <GL/gl.h>
+//#include <GL/glu.h>
+////#include <GL/glut.h>
+//#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -23,6 +37,11 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+// testCamera
+
+viewer::Viewer camera;
+
+
 // camera
 glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -33,20 +52,38 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 bool firstMouse = true;
-float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+//float yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+
+float yaw   = 0.0f;
 float pitch =  0.0f;
 float lastX =  800.0f / 2.0;
 float lastY =  600.0 / 2.0;
 float fov   =  45.0f;
 
+typedef std::numeric_limits<float> dfl;
+void Printmat4(const glm::mat4& m)
+{
+    std::cout.precision(dfl::max_digits10);
+    std::cout << m[0][0] << " " << m[1][0] << " " << m[2][0] << " " << m[3][0] << "\n";
+    std::cout << m[0][1] << " " << m[1][1] << " " << m[2][1] << " " << m[3][1] << "\n";
+    std::cout << m[0][2] << " " << m[1][2] << " " << m[2][2] << " " << m[3][2] << "\n";
+    std::cout << m[0][3] << " " << m[1][3] << " " << m[2][3] << " " << m[3][3] << "\n";
+}
+
+
+
+
 int main()
 {
+    std::string wcvshader_path = "../Camera/src/Shaders/coordinate.vs";
+    std::string wcfshader_path = "../Camera/src/Shaders/coordinate.fs";
+
     std::string texture1_path = "../Camera/assets/container.jpg";
     std::string texture2_path = "../Camera/assets/awesomeface.png";
     std::string vshader_path = "../Camera/src/Shaders/vertex.vs";
     std::string fshader_path = "../Camera/src/Shaders/fragment.fs";
 
-
+    camera.LookAt(cameraPos, cameraFront, cameraUp);
 
     // glfw: initialize and configure
         // ------------------------------
@@ -73,7 +110,7 @@ int main()
 
         glfwSetCursorPosCallback(window, mouse_callback);
         glfwSetScrollCallback(window, scroll_callback);
-        // tell GLFW to capture our mouse and hide cursor
+//        // tell GLFW to capture our mouse and hide cursor
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
@@ -88,7 +125,7 @@ int main()
         // configure global opengl state
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
 
 
         // build and compile our shader zprogram
@@ -97,8 +134,6 @@ int main()
 
         // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
-        // set up vertex data (and buffer(s)) and configure vertex attributes
-           // ------------------------------------------------------------------
        float vertices[] = {
            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -157,6 +192,7 @@ int main()
         };
 
 
+
         // set up VBO, VAO and concerned attributes
         // ------------------------------------------------------------------
         unsigned int VBO, VAO;
@@ -178,7 +214,7 @@ int main()
         glEnableVertexAttribArray(1);
 
 
-        // load and create a texture
+      // load and create a texture
       // -------------------------
       unsigned int texture1, texture2;
       // texture 1
@@ -230,7 +266,7 @@ int main()
       }
       stbi_image_free(data);
 
-      // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+       // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
        // -------------------------------------------------------------------------------------------
        ourShader.use();
        ourShader.setInt("texture1", 0);
@@ -238,7 +274,41 @@ int main()
 
 
 
+       // world coordinates
+       Shader wcShader(wcvshader_path.c_str(), wcfshader_path.c_str());
+       float wcVertices[] = {
+           // positions         // colors
+           0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+           1.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+           0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 0.0f,
+           0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f
+       };
+       unsigned int wcIndices[] = {
+           0, 1,  // x axis
+           0, 2,  // y axis
+           0, 3   // z axis
+       };
 
+       // set up VBO, VAO and concerned attributes
+       // ------------------------------------------------------------------
+       unsigned int wcVBO, wcVAO, wcEBO;
+       glGenVertexArrays(1, &wcVAO);
+       glGenBuffers(1, &wcVBO);
+       glGenBuffers(1, &wcEBO);
+
+       glBindVertexArray(wcVAO);
+
+       glBindBuffer(GL_ARRAY_BUFFER, wcVBO);
+       glBufferData(GL_ARRAY_BUFFER, sizeof(wcVertices), wcVertices, GL_STATIC_DRAW);
+
+       glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wcEBO);
+       glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(wcIndices), wcIndices, GL_STATIC_DRAW);
+       // position attribute
+       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+       glEnableVertexAttribArray(0);
+       // color attribute
+       glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+       glEnableVertexAttribArray(1);
 
 
        // render loop
@@ -257,7 +327,8 @@ int main()
 
            // render
            // ------
-
+           glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+//           glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // perform by state
 
            // bind textures on corresponding texture units
@@ -271,11 +342,14 @@ int main()
 
            // pass projection matrix to shader (as projection matrix rarely changes there's no need to do this per frame)
            // -----------------------------------------------------------------------------------------------------------
-           glm::mat4 projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+           camera.Perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+           glm::mat4 projection = camera.GetProjectionMatrix();
+
            ourShader.setMat4("projection", projection);
 
            // camera/view transformation
-           glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+//           glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+           glm::mat4 view = camera.GetViewMatirx();
            ourShader.setMat4("view", view);
 
 
@@ -292,6 +366,18 @@ int main()
 
                glDrawArrays(GL_TRIANGLES, 0, 36);
            }
+
+           // render world coordinates
+           wcShader.use();
+           wcShader.setMat4("view", view);
+           wcShader.setMat4("model", glm::mat4(1.0f));
+           wcShader.setMat4("projection", projection);
+           glLineWidth(5.0f);
+           glBindVertexArray(wcVAO);
+           glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
+           glLineWidth(1.0f);
+
+
 
            // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
            // -------------------------------------------------------------------------------
@@ -321,14 +407,22 @@ void processInput(GLFWwindow *window)
 
     float cameraSpeed = 2.5 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+//        cameraPos += cameraSpeed * cameraFront;
+        camera.ShiftForward(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+//        cameraPos -= cameraSpeed * cameraFront;
+        camera.ShiftBackward(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+//        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera.ShiftLeft(cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+//        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        camera.ShiftRight(cameraSpeed);
 
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.ShiftUp(cameraSpeed);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.ShiftDown(cameraSpeed);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -352,7 +446,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
 
@@ -360,8 +454,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
-    yaw += xoffset;
-    pitch += yoffset;
+//    yaw += xoffset;
+//    pitch += yoffset;
+
+    yaw = xoffset;
+    pitch = yoffset;
+
 
     // make sure that when pitch is out of bounds, screen doesn't get flipped
     if (pitch > 89.0f)
@@ -369,11 +467,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (pitch < -89.0f)
         pitch = -89.0f;
 
-    glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(front);
+//    glm::vec3 front;
+//    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+//    front.y = sin(glm::radians(pitch));
+//    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+//    cameraFront = glm::normalize(front);
+
+    camera.Pitch(glm::radians(pitch));
+    camera.Yaw(glm::radians(yaw));
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
