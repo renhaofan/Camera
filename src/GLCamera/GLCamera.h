@@ -74,14 +74,7 @@ namespace viewer
         void SetViewMatrix(const Mat4& _m);
         void SetViewMatrix(const Vec3& _u, const Vec3& _v, const Vec3& _w, const Vec3& _e);
 
-        void setViewPosition(const Vec3& _e)
-        {
-            SetViewTranslateMatrix(-_e);
-        }
-        void setViewPosition(scalar _x, scalar _y, scalar _z)
-        {
-            SetViewTranslateMatrix(Vec3(_x, _y, _z));
-        }
+
 
     private:
         //    extract uvwe     from translation and roataion matrix
@@ -101,17 +94,17 @@ namespace viewer
         Vec3 GetPosition() const { return e; }
 
         // delta > 0, shift direction---camera coordinates: right(u), up(v), backward(w);
-        void ShiftLeft(scalar delta_left, scalar sensitivity = 1.0);
-        void ShiftRight(scalar delta_right, scalar sensitivity = 1.0);
-        void ShiftUp(scalar delta_up, scalar sensitivity = 1.0);
-        void ShiftDown(scalar delta_down, scalar sensitivity = 1.0);
-        void ShiftForward(scalar delta_forward, scalar sensitivity = 1.0);
-        void ShiftBackward(scalar delta_backward, scalar sensitivity = 1.0);
+        void ShiftLeft(scalar delta_left, scalar speed = 1.0);
+        void ShiftRight(scalar delta_right, scalar speed = 1.0);
+        void ShiftUp(scalar delta_up, scalar speed = 1.0);
+        void ShiftDown(scalar delta_down, scalar speed = 1.0);
+        void ShiftForward(scalar delta_forward, scalar speed = 1.0);
+        void ShiftBackward(scalar delta_backward, scalar speed = 1.0);
 
         // angle(delta value) in radians by default,
-        void Pitch(scalar _radians, scalar _sensitivity = 1.0); // around u
-        void Yaw(scalar _radians, scalar _sensitivity = 1.0);  // aroud v
-        void Roll(scalar _radians, scalar _sensitivity = 1.0); // aroud w
+        void Pitch(scalar _radians); // around u
+        void Yaw(scalar _radians);  // aroud v
+        void Roll(scalar _radians); // aroud w
 
         /**********************************************************************
          *              setup projection matrix

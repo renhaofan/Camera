@@ -9,14 +9,16 @@ namespace viewer
         v = Vec3(0.0, 1.0, 0.0);
         w = Vec3(0.0, 0.0, 1.0);
         e = Vec3(0.0, 0.0, -10.0);
-        SetViewMatrix(u, v, w, e);
+        view_matrix = Mat4(1.0);
+        view_rotate_matrix = Mat4(1.0);
+        view_translate_matrix = Mat4(1.0);
 
-        proType = PERSPECTIVE;
+        proType = ORTHOGRAPHIC;
         fovy = 45.0; aspect = 1.3; // approximate 800/600=640/480
         z_near = 0.1; z_far = 100.0;
-        Perspective(fovy, aspect, z_near, z_far);
-    }
+        x_left = y_bottom = -100.0; x_right = y_top = 100.0;
 
+    }
 
 
     void Viewer::PrintViewInfo()
@@ -144,73 +146,73 @@ namespace viewer
         SetViewMatrix(tmp_u, tmp_v, tmp_w, _pos);
     }
 
-    void Viewer::ShiftLeft(scalar delta_left, scalar sensitivity)
+    void Viewer::ShiftLeft(scalar delta_left, scalar speed)
     {
         if (delta_left <= 0)
         {
-            ShiftRight(-delta_left, sensitivity);
+            ShiftRight(-delta_left, speed);
         } else
         {
-            SetViewTranslateMatrix(delta_left * sensitivity * u - e);
+            SetViewTranslateMatrix(delta_left * speed * u - e);
         }
     }
 
-    void Viewer::ShiftRight(scalar delta_right, scalar sensitivity)
+    void Viewer::ShiftRight(scalar delta_right, scalar speed)
     {
         if (delta_right <= 0)
         {
-            ShiftRight(-delta_right, sensitivity);
+            ShiftRight(-delta_right, speed);
         } else
         {
-            SetViewTranslateMatrix(-delta_right * sensitivity * u - e);
+            SetViewTranslateMatrix(-delta_right * speed * u - e);
         }
     }
 
-    void Viewer::ShiftUp(scalar delta_up, scalar sensitivity)
+    void Viewer::ShiftUp(scalar delta_up, scalar speed)
     {
         if (delta_up <= 0)
         {
-            ShiftRight(-delta_up, sensitivity);
+            ShiftRight(-delta_up, speed);
         } else
         {
-            SetViewTranslateMatrix(-delta_up * sensitivity * v - e);
+            SetViewTranslateMatrix(-delta_up * speed * v - e);
         }
     }
 
-    void Viewer::ShiftDown(scalar delta_down, scalar sensitivity)
+    void Viewer::ShiftDown(scalar delta_down, scalar speed)
     {
         if (delta_down <= 0)
         {
-            ShiftRight(-delta_down, sensitivity);
+            ShiftRight(-delta_down, speed);
         } else
         {
-            SetViewTranslateMatrix(delta_down * sensitivity * v - e);
+            SetViewTranslateMatrix(delta_down * speed * v - e);
         }
     }
 
-    void Viewer::ShiftForward(scalar delta_forward, scalar sensitivity)
+    void Viewer::ShiftForward(scalar delta_forward, scalar speed)
     {
         if (delta_forward <= 0)
         {
-            ShiftRight(-delta_forward, sensitivity);
+            ShiftRight(-delta_forward, speed);
         } else
         {
-            SetViewTranslateMatrix(delta_forward * sensitivity * w - e);
+            SetViewTranslateMatrix(delta_forward * speed * w - e);
         }
     }
 
-    void Viewer::ShiftBackward(scalar delta_backward, scalar sensitivity)
+    void Viewer::ShiftBackward(scalar delta_backward, scalar speed)
     {
         if (delta_backward <= 0)
         {
-            ShiftRight(-delta_backward, sensitivity);
+            ShiftRight(-delta_backward, speed);
         } else
         {
-            SetViewTranslateMatrix(-delta_backward * sensitivity * w - e);
+            SetViewTranslateMatrix(-delta_backward * speed * w - e);
         }
     }
 
-    void Viewer::Pitch(scalar _radians, scalar _sensitivity)
+    void Viewer::Pitch(scalar _radians)
     {
         /*
         $$\mathbf{R}_{x}(\alpha)=\left(\begin{array}{cccc}
@@ -221,18 +223,17 @@ namespace viewer
             \end{array}\right)
         $$
         */
-        scalar tmp_radians = _radians * _sensitivity;
         Mat4 rotation(1.0);
         // [2][1] 1-st row, 2-st column
-        rotation[1][1] = rotation[2][2] = std::cos(tmp_radians);
-        rotation[1][2] = std::sin(tmp_radians);
+        rotation[1][1] = rotation[2][2] = std::cos(_radians);
+        rotation[1][2] = std::sin(_radians);
         rotation[2][1] = -rotation[1][2];
         view_rotate_matrix = rotation * view_rotate_matrix;
         ExtractUVWE();
         ComposeViewMatrix();
     }
 
-    void Viewer::Yaw(scalar _radians, scalar _sensitivity)
+    void Viewer::Yaw(scalar _radians)
     {
         /*
         $$\mathbf{R}_{y}(\alpha)=\left(\begin{array}{cccc}
@@ -243,17 +244,16 @@ namespace viewer
             \end{array}\right)
         $$
         */
-        scalar tmp_radians = _radians * _sensitivity;
         Mat4 rotation(1.0);
-        rotation[0][0] = rotation[2][2] = std::cos(tmp_radians);
-        rotation[2][0] = std::sin(tmp_radians);
+        rotation[0][0] = rotation[2][2] = std::cos(_radians);
+        rotation[2][0] = std::sin(_radians);
         rotation[0][2] = -rotation[2][0];
         view_rotate_matrix = rotation * view_rotate_matrix;
         ExtractUVWE();
         ComposeViewMatrix();
     }
 
-    void Viewer::Roll(scalar _radians, scalar _sensitivity)
+    void Viewer::Roll(scalar _radians)
     {
         /*
         $$\mathbf{R}_{z}(\alpha)=\left(\begin{array}{cccc}
@@ -264,10 +264,9 @@ namespace viewer
             \end{array}\right)
         $$
         */
-        scalar tmp_radians = _radians * _sensitivity;
         Mat4 rotation(1.0);
-        rotation[0][0] = rotation[1][1] = std::cos(tmp_radians);
-        rotation[0][1] = std::sin(tmp_radians);
+        rotation[0][0] = rotation[1][1] = std::cos(_radians);
+        rotation[0][1] = std::sin(_radians);
         rotation[1][0] = -rotation[0][1];
         view_rotate_matrix = rotation * view_rotate_matrix;
         ExtractUVWE();
