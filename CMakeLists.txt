@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 2.8)
 project (camera)
 set(APP_TARGET camera)
 set(APP_Test_TARGET camera_test)
+set(APP_ModelLoad_TARGET camera_model_load)
 
 #if you want a double-precision
 #set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -DUSING_FLOAT64")
@@ -45,6 +46,11 @@ file(GLOB Apps_Test_SRC
 "src/Apps/test.cpp"
 )
 
+file(GLOB Apps_ModelLoad_SRC
+"src/Apps/model_load.cpp"
+)
+
+
 file(GLOB GLCamera_SRC
 "src/GLCamera/*.cpp"
 "src/GLCamera/*.h"
@@ -81,6 +87,15 @@ list(APPEND SOURCES_Test
     ${STBIMAGECPP}
     )
 
+list(APPEND SOURCES_Model
+    ${GLCamera_SRC}
+    ${Geometry_SRC}
+    ${Tools_SRC}
+    ${Apps_ModelLoad_SRC}
+    ${GLADC}
+    ${STBIMAGECPP}
+    )
+
 
 
 
@@ -111,7 +126,10 @@ add_executable(${APP_TARGET} ${SOURCES})
 target_link_libraries(${APP_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
 
 
-
-
 add_executable(${APP_Test_TARGET} ${SOURCES_Test})
 target_link_libraries(${APP_Test_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+
+add_executable(${APP_ModelLoad_TARGET} ${SOURCES_Model})
+target_link_libraries(${APP_ModelLoad_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+
+
