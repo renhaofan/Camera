@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 project (camera)
 set(APP_TARGET camera)
@@ -17,17 +17,19 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 ########################################
 
 # -Wextra warning: unused variables
-list(APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall")
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+list(APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall -pthread")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 
 
 
-include_directories(3rdparty/glad)
+#include_directories(3rdparty/glad
+include_directories(3rdparty/)
 include_directories(3rdparty/stb_image)
 
 file(GLOB GLADC
-"3rdparty/glad/src/*.c"
+"3rdparty/glad/glad.c"
 )
 
 file(GLOB STBIMAGECPP
@@ -123,13 +125,13 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 # generate exetuable and link libraries
 ########################################
 add_executable(${APP_TARGET} ${SOURCES})
-target_link_libraries(${APP_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+target_link_libraries(${APP_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 
 add_executable(${APP_Test_TARGET} ${SOURCES_Test})
-target_link_libraries(${APP_Test_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+target_link_libraries(${APP_Test_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(${APP_ModelLoad_TARGET} ${SOURCES_Model})
-target_link_libraries(${APP_ModelLoad_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY})
+target_link_libraries(${APP_ModelLoad_TARGET} ${GLFW3_LIBRARY} GLU GL Xrandr Xi Xinerama Xcursor X11 rt dl ${ASSIMP_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 
